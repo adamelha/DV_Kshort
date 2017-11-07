@@ -136,7 +136,13 @@ StatusCode DDL::Kshort_DDL::execute() {
 }
 
 
-
+bool DDL::Kshort_DDL::isPi(float particalMass)
+{
+	float theoretical_pi_mass = 139.5706; // MeV
+	float margin_of_error = 0.00024
+	
+	return (particalMass >= theoretical_pi_mass - margin_of_error) && (particalMass <= theoretical_pi_mass + margin_of_error);
+}
 
 StatusCode DDL::Kshort_DDL::fillKs() {
 
@@ -149,13 +155,14 @@ StatusCode DDL::Kshort_DDL::fillKs() {
 
 
   const xAOD::VertexContainer* vertices = nullptr;
-  CHECK(evtStore()->retrieve(vertexes, "VrtSecIncludive_SecondaryVertices");
+  CHECK(evtStore()->retrieve(vertices, "VrtSecIncludive_SecondaryVertices");
   
   xAOD::TrackParticle* first_track = nullptr;
   xAOD::TrackParticle* second_track = nullptr;
 
   //vertex container of kshorts
   xAOD::VertexContainer* kshortVertices = new VertexContainer();
+  
   
   //we loop over the vertices to find kshort vertices that decay to pi+ and pi-
   for(xAOD::Vertex* vertex_ptr : vertices)
@@ -165,7 +172,7 @@ StatusCode DDL::Kshort_DDL::fillKs() {
 		first_track = vertex_ptr->trackParticle(0);
 		second_track = vertex_ptr->trackParticle(1);
 		//lets check that the mass are equal and equal to pi mass
-		if((first_track->m() == second_track->m()) && first_track->m()== 139.6)
+		if( isPi(first_track->m()) && isPi(second_track->m()))
 		{
 			//lets check if they have charges of -1 and +1.
 			if(first_track->charge()+second_track->charge()==0 && std::abs(first_track->charge())==1)
