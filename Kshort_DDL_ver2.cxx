@@ -61,7 +61,7 @@ DDL::Kshort_DDL::Kshort_DDL( const std::string& name, ISvcLocator* pSvcLocator )
    m_nTracks(0)   
 {
 
-  declareProperty( "Property", m_nProperty ); //example property declaration
+  declareProperty("HistSvcName", m_hist_name = "Kshort_DDL" ); 
 
 }
 
@@ -114,6 +114,13 @@ StatusCode DDL::Kshort_DDL::initialize() {
 
   //// ATH_MSG_INFO ("Initializing " << name() << "...");
 
+  // Create a tree
+  m_Ks_tree = new TTree("Kshort_DDL", "");
+  m_vxtree->SetTree(m_Ks_tree);
+  // Register the tree
+  std::string hist_path = "/" + m_hist_name + "/";
+  CHECK(m_histSvc->regTree(hist_path + m_Ks_tree->GetName(), m_Ks_tree));
+
   return StatusCode::SUCCESS;
 }
 
@@ -159,6 +166,7 @@ StatusCode DDL::Kshort_DDL::fillKs() {
   const xAOD::VertexContainer* vertices = nullptr;
   CHECK(evtStore()->retrieve(vertices, "VrtSecIncludive_SecondaryVertices"); // Is VrtSecIncludive_SecondaryVertices OK or any name can replace it ?
   
+  // "TrackParticle": pointer to a given track that was used in vertex reconstruction
   xAOD::TrackParticle* piplus_track = nullptr;
   xAOD::TrackParticle* piminus_track = nullptr;
 
@@ -180,9 +188,27 @@ StatusCode DDL::Kshort_DDL::fillKs() {
 			// Checking if they have charges of -1 and +1
 			if(piplus_track->charge()+piminus_track->charge()==0 && piplus_track->charge()==1)
 			{
+				// Also how to keep the mass of Kshort within +-6 MeV of its actual mass (497.611 +- 0.013 MeV) ?
+                              
+
+
 				// How to save the mass of such vertices and other parameters ?
 				// The idea is to save all these variables in form of a Tree.	
-				
+				// Mass of the Kshort vertices after confirming that they are indeed Kshort vertices
+				// Also a storage for the Kshort vertices
+				KshortVertices->push_back(vertices); // correct?
+                                // Loop over KshortVertices and store the necessary vertex variables
+                                for (xAOD::Vertex* ks_vertex_ptr : KshortVertices)
+				{
+					h_kshort_mass->Fill(vertex_ptr->);
+				}
+								
+				// Example of saving in a tree
+				// Create a ROOT Tree (Ref. https://root.cern.ch/root/htmldoc/guides/users-guide/Trees.html#trees)
+				TTree *tree = new TTree("T","An example of ROOT tree with a few branches");
+				tree->Branch("point",&point,"x:y:z");
+				tree->Branch("eventn",&eventn,"ntrack/I:nseg:nvertex:flag/i:temperature/F");
+				tree->Branch("hpx","TH1F",&hpx,128000,0);
 
 				// Saving individual track info in histograms (to be modified, just wrote down which quantities we need to save)
 				h_piplus_pt->Fill(piplus_track->pt()); // transverse momentum of pi+ track
