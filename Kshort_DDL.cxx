@@ -57,16 +57,16 @@
 
 
 DDL::Kshort_DDL::Kshort_DDL( const std::string& name, ISvcLocator* pSvcLocator ) : 
-   AthAnalysisAlgorithm( name, pSvcLocator ),
-   m_nTracks(0)   
+   AthAnalysisAlgorithm( name, pSvcLocator )//,m_nTracks(0)   
 {
 
   //declareProperty("HistSvcName", m_hist_name = "Kshort_DDL" ); 
 
 }
 
-StatusCode DDL::Kshort_DDL::initialize() { 
-  
+StatusCode DDL::Kshort_DDL::initialize() 
+{ 
+  	/*
 	StatusCode sc = service("StoreGateSvc", m_storeGate);
 	if (sc.isFailure()) 
 	{
@@ -85,7 +85,7 @@ StatusCode DDL::Kshort_DDL::initialize() {
 		msg(MSG::ERROR) << "Unable to retrieve pointer to THistSvc" << endreq;
 		return sc;
 	}
-
+	
 	// Histogramming...
 	ServiceHandle<ITHistSvc> histSvc("THistSvc",name());
 	CHECK( histSvc.retrieve() );
@@ -95,7 +95,7 @@ StatusCode DDL::Kshort_DDL::initialize() {
 		msg(MSG::ERROR) << "Unable to register histogramming service" << endreq;
 		return sc;
 	}
-
+	*/
 
 	//// ATH_MSG_INFO ("Initializing " << name() << "...");
 
@@ -108,7 +108,7 @@ StatusCode DDL::Kshort_DDL::initialize() {
 	//CHECK(m_histSvc->regTree(hist_path + m_Ks_tree->GetName(), m_Ks_tree));
 
 
-	*kshort_tree = new TTree("KshortTTree","Kshort Tree!");
+	TTree *kshort_tree = new TTree("KshortTTree","Kshort Tree!");
 
 
 	kshort_tree->Branch("piplus_pt",&piplus_pt,"piplus_pt/f");
@@ -135,7 +135,8 @@ StatusCode DDL::Kshort_DDL::initialize() {
 	return StatusCode::SUCCESS;
 }
 
-StatusCode DDL::Kshort_DDL::finalize() {
+StatusCode DDL::Kshort_DDL::finalize() 
+{
 
   //// ATH_MSG_INFO ("Finalizing " << name() << "...");
 
@@ -147,13 +148,15 @@ StatusCode DDL::Kshort_DDL::execute()
 	this->event_counter++;
 	std::cout << "Event Number : " << this->event_counter << std::endl;
 	StatusCode sc = StatusCode::SUCCESS;
-    sc = fillKs();
-    if ( sc.isFailure() ) 
+	/*
+	sc = fillKs();
+    	if ( sc.isFailure() ) 
 	{
-       msg(MSG::ERROR) << "Ks filling failed" << endreq;
-       return StatusCode::SUCCESS;
-    }  
-      return sc;     
+       		msg(MSG::ERROR) << "Ks filling failed" << endreq;
+       		return StatusCode::SUCCESS;
+    	}
+	*/  
+      	return sc;     
   //// ATH_MSG_DEBUG ("Executing " << name() << "...");
 }
 
@@ -168,7 +171,8 @@ bool DDL::Kshort_DDL::isPi(float piMass)
 }
 
 
-StatusCode DDL::Kshort_DDL::finding_right_ks() {
+StatusCode DDL::Kshort_DDL::finding_right_ks() 
+{
 
 	StatusCode sc = StatusCode::SUCCESS; 
 
@@ -176,19 +180,19 @@ StatusCode DDL::Kshort_DDL::finding_right_ks() {
 
 
 	const xAOD::VertexContainer* vertices = nullptr;
-	CHECK(evtStore()->retrieve(vertices, "VrtSecIncludive_SecondaryVertices"); // Is VrtSecIncludive_SecondaryVertices OK or any name can replace it ?
+	CHECK(evtStore()->retrieve(vertices, "VrtSecIncludive_SecondaryVertices")); // Is VrtSecIncludive_SecondaryVertices OK or any name can replace it ?
   
 	// "TrackParticle": pointer to a given track that was used in vertex reconstruction
-	xAOD::TrackParticle* piplus_track = nullptr;
-	xAOD::TrackParticle* piminus_track = nullptr;
+	const xAOD::TrackParticle* piplus_track = nullptr;
+	const xAOD::TrackParticle* piminus_track = nullptr;
 
 	// Vertex container for Kshorts
-	xAOD::VertexContainer* kshortVertices = new VertexContainer();
+	//xAOD::VertexContainer* kshortVertices = new VertexContainer();
   
   
 	// Looping over the vertices to find Kshort vertices which decay to pi+ and pi-
 	// Defining the iterator in a short and efficient way
-	for(xAOD::Vertex* vertex_ptr : vertices)
+	for(xAOD::Vertex* vertex_ptr : *vertices)
 	{
         // Vertices with only two tracks 
 		if(vertex_ptr->nTrackParticles()==2)
@@ -204,7 +208,7 @@ StatusCode DDL::Kshort_DDL::finding_right_ks() {
 			{
 				// Checking if they have charges of -1 and +1
 				if(piplus_track->charge()+piminus_track->charge()==0 && piplus_track->charge()==1)
-                {      
+                		{      
 					// How to save the mass of such vertices and other parameters ?
 					// The idea is to save all these variables in form of a Tree.	
 					// Mass of the Kshort vertices after confirming that they are indeed Kshort vertices
@@ -216,20 +220,20 @@ StatusCode DDL::Kshort_DDL::finding_right_ks() {
 					// Saving individual track info in ttree
 					
 					piplus_pt 	= 	piplus_track->pt();
-					piplus_p  	= 	piplus_track->p();
-					piplus_px	= 	piplus_track->p4().px();
-					piplus_py	= 	piplus_track->p4().py();
-					piplus_pz	= 	piplus_track->p4().pz();
+					piplus_p  	= 	piplus_track->p4().P();
+					piplus_px	= 	piplus_track->p4().Px();
+					piplus_py	= 	piplus_track->p4().Py();
+					piplus_pz	= 	piplus_track->p4().Pz();
 					piplus_e	= 	piplus_track->e();
 					piplus_z0	=	piplus_track->z0();
 					piplus_d0	=	piplus_track->d0();
 					piplus_eta	=	piplus_track->eta();
 
 					piminus_pt 	= 	piminus_track->pt();
-					piminus_p  	= 	piminus_track->p();
-					piminus_px	= 	piminus_track->p4().px();
-					piminus_py	= 	piminus_track->p4().py();
-					piminus_pz	= 	piminus_track->p4().pz();
+					piminus_p  	= 	piminus_track->p4().P();
+					piminus_px	= 	piminus_track->p4().Px();
+					piminus_py	= 	piminus_track->p4().Py();
+					piminus_pz	= 	piminus_track->p4().Pz();
 					piminus_e	= 	piminus_track->e();
 					piminus_z0	=	piminus_track->z0();
 					piminus_d0	=	piminus_track->d0();
@@ -241,8 +245,6 @@ StatusCode DDL::Kshort_DDL::finding_right_ks() {
 			}			
 		}	
 	}
-	
-
 
   // Track container for all tracks 
   /*
@@ -335,4 +337,5 @@ StatusCode DDL::Kshort_DDL::finding_right_ks() {
 	{//loop over all the tracks from the recoVertex
 	}	
 	*/
+	return sc;
 }

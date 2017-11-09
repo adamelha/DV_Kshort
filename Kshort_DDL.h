@@ -1,7 +1,7 @@
 #ifndef DDLSTUDIES_KSHORT_DDL_H
 #define DDLSTUDIES_KSHORT_DDL_H 
 
-#include "AthenaAnalysisBaseComps/AthAnalysisAlgorithm.h"
+#include "AthAnalysisBaseComps/AthAnalysisAlgorithm.h"
 #include "GaudiKernel/ToolHandle.h"
 #include "GaudiKernel/ITHistSvc.h"
 #include "StoreGate/StoreGateSvc.h" 
@@ -78,8 +78,8 @@ namespace DDL {
 
             	// for good Kshort ?
             	//virtual bool goodKs () const;
-				bool isPi(float piMass);
-				StatusCode finding_right_ks();
+		bool isPi(float piMass);
+		StatusCode finding_right_ks();
    };
 
 } 
