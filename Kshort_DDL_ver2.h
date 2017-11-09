@@ -22,13 +22,10 @@
 #include "TMath.h"
 #include "TROOT.h"
 
+using namespace std;
 
 // forward declaration
 class TTree;
-class TH1I;
-class TH1F;
-class TH2F;
-class TH1D;
 class TEfficiency;
 
 
@@ -38,6 +35,39 @@ namespace DDL {
     class Kshort_DDL: public ::AthAnalysisAlgorithm 
     {
  
+		private: 
+			// histogram service
+        	//ServiceHandle<ITHistSvc> m_histSvc;
+        	//std::string m_hist_name;
+
+			int event_counter=0;
+
+			//TTree* m_Ks_tree;
+			TTree* kshort_tree = nullptr;
+
+			//variables for the TTREE
+			double piplus_pt=0; 	// transverse momentum of pi+ track
+			double piplus_p=0; 	// momentum magnitude of pi+ track
+			double piplus_px=0;	// x component of momentum of pi+ track
+			double piplus_py=0;	// y component of momentum of pi+ track
+			double piplus_pz=0;	// z component of momentum of pi+ track
+			double piplus_e=0;	// energy of pi+ track
+			double piplus_z0=0;	// z0 of pi+ track 
+			double piplus_d0=0;	// d0 of pi+ track
+			double piplus_eta=0;	// pseudo rapidity of pi+ track 
+
+			double piminus_pt=0;	// transverse momentum of pi- track
+			double piminus_p=0;	// momentum magnitude of pi- track
+			double piminus_px=0;	// x component of momentum of pi- track
+			double piminus_py=0;	// y component of momentum of pi- track
+			double piminus_pz=0;	// z component of momentum of pi- track
+			double piminus_e=0;	// energy of pi- track
+			double piminus_z0=0;	// z0 of pi- track 
+			double piminus_d0=0;	// d0 of pi- track
+			double piminus_eta=0;	// pseudo rapidity of pi- track 
+
+
+
         public: 
             	Kshort_DDL( const std::string& name, ISvcLocator* pSvcLocator );
             	virtual ~Kshort_DDL() = default; 
@@ -47,15 +77,9 @@ namespace DDL {
             	StatusCode  finalize() override;
 
             	// for good Kshort ?
-            	virtual bool goodKs () const;
-
-        private: 
-		// histogram service
-        	ServiceHandle<ITHistSvc> m_histSvc;
-        	std::string m_hist_name;
-		TTree* m_Ks_tree;
-
-
+            	//virtual bool goodKs () const;
+				bool isPi(float piMass);
+				StatusCode finding_right_ks();
    };
 
 } 
