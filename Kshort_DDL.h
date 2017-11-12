@@ -34,7 +34,7 @@ class TEfficiency;
 
 namespace DDL {
 
-    class Kshort_DDL: public ::AthAnalysisAlgorithm 
+    class Kshort_DDL: public AthAnalysisAlgorithm 
     {
  
 		private: 
@@ -44,8 +44,9 @@ namespace DDL {
 
 			int event_counter=0;
 
-			//TTree* m_Ks_tree;
-			TTree* kshort_tree = nullptr;
+			TTree* m_kshort_tree = nullptr;
+			ITHistSvc * m_thistSvc = nullptr;
+			StoreGateSvc* m_storeGate = nullptr;
 
 			//variables for the TTREE
 			double piplus_pt=0; 	// transverse momentum of pi+ track
