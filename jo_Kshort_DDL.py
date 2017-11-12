@@ -4,6 +4,8 @@
 #                                                                                            #
 ##############################################################################################
 
+# Place this file in DDLStudies/share/
+
 # Enable file reading
 import AthenaPoolCnvSvc.ReadAthenaPool
 from AthenaCommon.AthenaCommonFlags import athenaCommonFlags as acf
