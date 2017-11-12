@@ -1,3 +1,5 @@
+// This file should be copied to DDLStudies/src
+
 #ifndef DDLSTUDIES_KSHORT_DDL_H
 #define DDLSTUDIES_KSHORT_DDL_H 
 
