@@ -14,8 +14,6 @@ from AthenaCommon.AthenaCommonFlags import athenaCommonFlags as acf
 # Get input file(s) for running on the local environment. If want to run on GRID -- 
 from glob import glob
 acf.FilesInput =["/afs/cern.ch/work/j/jbiswal/public/DAOD_RPVLL.11691312._000011.pool.root.1"]
-
-
 # Config rec
 from RecExConfig.RecFlags import rec
 rec.OutputLevel = WARNING
@@ -61,21 +59,8 @@ svcMgr.THistSvc.Output += ["%s DATAFILE='hist_Kshort_DDL_2.root' OPT='RECREATE'"
 # Setup KshortCuts
 
 
-# Setup DVCuts
-# DVCuts necessary for Kshort reconstrauction?
-#
-#ToolSvc += CfgMgr.DDL__DVCuts("DiLepBaseCuts",
-#                              rDVMax                = 300.,
-#                              zDVMax                = 300.,
-#                              chisqPerDofMax        = 5.,
-#                              distMin               = 4.,
-#                              LowMass               = 6000.,
-#                              DVMassMin             = 10000.,
-#                              MaterialMapName       = "map",
-#                              MaterialMapFile       = "materialMap3D_Run2_v2.1.1.root",
-#                              DisabledModuleMapName = "PIXVetoMap",
+# Setup DVCuts - This was deleted for Kshort
 #                              DisabledModuleMapFile = "DisabledModuleMap_Run2_v2.root")
-
 #ToolSvc += CfgMgr.JetCalibrationTool("myJESTool",
 #                                     IsData=False,
 #                                     ConfigFile="JES_MC15Prerecommendation_April2015.config",
@@ -84,8 +69,6 @@ svcMgr.THistSvc.Output += ["%s DATAFILE='hist_Kshort_DDL_2.root' OPT='RECREATE'"
 
 # Add algorithm
 algSeq = CfgMgr.AthSequencer("AthAlgSeq")
-#algSeq += CfgMgr.DDL__LepReco(HistSvcName = svc_name)
 
 # Include your algorithms 
-#from DDL.DDLStudiesConf import DDL__Kshort_DDL
 algSeq += CfgMgr.DDL__Kshort_DDL("Kshort_DDL")

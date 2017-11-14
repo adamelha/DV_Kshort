@@ -7,10 +7,6 @@
 // framework includes
 #include "GaudiKernel/ServiceHandle.h"
 #include "GaudiKernel/ITHistSvc.h"
-#include "StoreGate/StoreGate.h"
-#include "StoreGate/StoreGateSvc.h"
-#include "StoreGate/DataHandle.h"
-
 				
 // EDM includes: - if move to header file will not compile?
 #include "xAODEventInfo/EventInfo.h"
@@ -28,16 +24,6 @@
 //#include "xAODTruth/TruthVertex.h"
 //#include "xAODTruth/TruthVertexContainer.h"
 //#include "xAODTruth/xAODTruthHelpers.h"
-
-#include "StoreGate/StoreGate.h"
-#include "StoreGate/StoreGateSvc.h"
-#include "StoreGate/DataHandle.h"
-
-//Event includes
-//#include "TrigDecisionTool/TrigDecisionTool.h"
-//#include "TrigDecisionTool/ChainGroup.h"
-//#include "TrigDecisionTool/FeatureContainer.h"
-//#include "TrigDecisionTool/Feature.h"
 
 
 //ROOT

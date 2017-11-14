@@ -1,6 +1,34 @@
 # DV_Kshort
+## About
 
-## The latest source code file is: Kshort_DDL_Niv_1Nov.cxx
+This branch is for development purposes. It was created so we can build and test the Kshort code building the minimum necessary.
+The code is organized in the same way as the DDLStudies code is so when we want we can just merge it into DDLStudies repo.
+It is very easy to build and run this code from scratch. 
+The package is called DV_Kshort.
+Just follow the steps: first clone, then set up the environment, then build, then run. 
+
+## Cloning this repository:
+- From within lxplus, run the following command: `git clone https://github.com/adamelha/DV_Kshort.git`
+
+## Setting up the environment:
+- cd into the cloned directory: `cd DV_Kshort`
+- Simply run the following command: `source setenv.sh`
+- This will set up the atlas environment as well as create the work space.
+- you may run the --quick and --rucio flags if you wish. Check out the documentation at the top of setenv.sh file.
+
+## Building the code:
+- cd into the build directory: `cd WorkArea/cmt`
+- Build the code: `cmt bro gmake`
+
+## Running the job:
+- cd into the run directory `cd WorkArea/run`
+- For convenience, copy the job options file to the run dir: `cp ../../DV_Kshort/share/jo_Kshort_DDL.py .`
+- Run the job (the piping to a log file is optional): `athena jo_Kshort_DDL.py | tee log.txt`
+- A .root file will be created in the run directory, ready for analysis with ROOT.
+
+
+
+
 ## Kshort_DDL.cxx is the older file, which have many things but most of those are unecessary. Kshort_DDL_Niv_1Nov.cxx is the first iteration of Kshort_DDL.cxx
 ## Kshort_DDL.h is the header file to the source file. This file has been modified after its creation, but we don't need to worry about that one.
 ## jo_Kshort_DDL.py is the joboptions file created for Kshort analysis, although some portions have already been modified, still it needs to be modified
