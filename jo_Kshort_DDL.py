@@ -13,7 +13,7 @@ from AthenaCommon.AthenaCommonFlags import athenaCommonFlags as acf
 
 # Get input file(s) for running on the local environment. If want to run on GRID -- 
 from glob import glob
-acf.FilesInput =["/afs/cern.ch/work/a/ardubreu/private/dataset/ESDnonRetracked/10G/ESD.05692808._000022.pool.root.1"]
+acf.FilesInput =["/afs/cern.ch/work/j/jbiswal/public/DAOD_RPVLL.11691312._000011.pool.root.1"]
 
 
 # Config rec
@@ -38,21 +38,22 @@ TriggerFlags.doTriggerConfigOnly = True
 include("RecExCommon/RecExCommon_topOptions.py")
 
 # Set events
-theApp.EvtMax = vars().get("maxEvents", -1)
+#theApp.EvtMax = vars().get("maxEvents", -1)
+theApp.EvtMax = 50
 svcMgr.EventSelector.SkipEvents = vars().get("skipEvents", 0)
 
 # Setup trigger tool
-ToolSvc += CfgMgr.Trig__TrigDecisionTool("TrigDecisionTool",
-                                         OutputLevel = WARNING,
-                                         TrigDecisionKey = "xTrigDecision")
+#ToolSvc += CfgMgr.Trig__TrigDecisionTool("TrigDecisionTool",
+#                                         OutputLevel = WARNING,
+#                                         TrigDecisionKey = "xTrigDecision")
 
 # Setup THistSvc
 svc_name = "Kshort_DDL"
 svcMgr += CfgMgr.THistSvc()
-svcMgr.THistSvc.Output += ["%s DATAFILE='hist_Kshort_DDL.root' OPT='RECREATE'" % (svc_name)]
+svcMgr.THistSvc.Output += ["%s DATAFILE='hist_Kshort_DDL_2.root' OPT='RECREATE'" % (svc_name)]
 
 # Required for Kshort reconstruction?
-trackPtCut = 10000.
+#trackPtCut = 10000.
 
 # Setup PionCuts
 
@@ -62,23 +63,24 @@ trackPtCut = 10000.
 
 # Setup DVCuts
 # DVCuts necessary for Kshort reconstrauction?
-ToolSvc += CfgMgr.DDL__DVCuts("DiLepBaseCuts",
-                              rDVMax                = 300.,
-                              zDVMax                = 300.,
-                              chisqPerDofMax        = 5.,
-                              distMin               = 4.,
-                              LowMass               = 6000.,
-                              DVMassMin             = 10000.,
-                              MaterialMapName       = "map",
-                              MaterialMapFile       = "materialMap3D_Run2_v2.1.1.root",
-                              DisabledModuleMapName = "PIXVetoMap",
-                              DisabledModuleMapFile = "DisabledModuleMap_Run2_v2.root")
+#
+#ToolSvc += CfgMgr.DDL__DVCuts("DiLepBaseCuts",
+#                              rDVMax                = 300.,
+#                              zDVMax                = 300.,
+#                              chisqPerDofMax        = 5.,
+#                              distMin               = 4.,
+#                              LowMass               = 6000.,
+#                              DVMassMin             = 10000.,
+#                              MaterialMapName       = "map",
+#                              MaterialMapFile       = "materialMap3D_Run2_v2.1.1.root",
+#                              DisabledModuleMapName = "PIXVetoMap",
+#                              DisabledModuleMapFile = "DisabledModuleMap_Run2_v2.root")
 
-ToolSvc += CfgMgr.JetCalibrationTool("myJESTool",
-                                     IsData=False,
-                                     ConfigFile="JES_MC15Prerecommendation_April2015.config",
-                                     CalibSequence="JetArea_Residual_Origin_EtaJES_GSC",
-                                     JetCollection="AntiKt4EMTopo")
+#ToolSvc += CfgMgr.JetCalibrationTool("myJESTool",
+#                                     IsData=False,
+#                                     ConfigFile="JES_MC15Prerecommendation_April2015.config",
+#                                     CalibSequence="JetArea_Residual_Origin_EtaJES_GSC",
+#                                     JetCollection="AntiKt4EMTopo")
 
 # Add algorithm
 algSeq = CfgMgr.AthSequencer("AthAlgSeq")

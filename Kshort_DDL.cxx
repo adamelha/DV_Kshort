@@ -34,10 +34,10 @@
 #include "StoreGate/DataHandle.h"
 
 //Event includes
-#include "TrigDecisionTool/TrigDecisionTool.h"
-#include "TrigDecisionTool/ChainGroup.h"
-#include "TrigDecisionTool/FeatureContainer.h"
-#include "TrigDecisionTool/Feature.h"
+//#include "TrigDecisionTool/TrigDecisionTool.h"
+//#include "TrigDecisionTool/ChainGroup.h"
+//#include "TrigDecisionTool/FeatureContainer.h"
+//#include "TrigDecisionTool/Feature.h"
 
 
 //ROOT
@@ -60,7 +60,7 @@
 
 
 DDL::Kshort_DDL::Kshort_DDL( const std::string& name, ISvcLocator* pSvcLocator ) : 
-   AthAnalysisAlgorithm( name, pSvcLocator )//,m_nTracks(0)   
+   AthAnalysisAlgorithm( name, pSvcLocator ) 
 {
 
   //declareProperty("HistSvcName", m_hist_name = "Kshort_DDL" ); 
@@ -69,7 +69,7 @@ DDL::Kshort_DDL::Kshort_DDL( const std::string& name, ISvcLocator* pSvcLocator )
 
 StatusCode DDL::Kshort_DDL::initialize() 
 { 
-	std::cout << "initialize!!!" << std::endl;
+	std::cout << "initialize" << std::endl;
 
 	StatusCode sc = service("StoreGateSvc", m_storeGate);
 	if (sc.isFailure())
@@ -108,25 +108,27 @@ StatusCode DDL::Kshort_DDL::initialize()
 	//CHECK( histSvc->regHist("/HNL/m_nTracks",m_nTracks) );
 
 
-	m_kshort_tree->Branch("piplus_pt", &piplus_pt, "piplus_pt/f");
-	m_kshort_tree->Branch("piplus_p", &piplus_p, "piplus_p/f");
-	m_kshort_tree->Branch("piplus_px", &piplus_px, "piplus_px/f");
-	m_kshort_tree->Branch("piplus_py", &piplus_py, "piplus_py/f");
-	m_kshort_tree->Branch("piplus_pz", &piplus_pz, "piplus_pz/f");
-	m_kshort_tree->Branch("piplus_e", &piplus_e, "piplus_e/f");
-	m_kshort_tree->Branch("piplus_z0", &piplus_z0, "piplus_z0/f");
-	m_kshort_tree->Branch("piplus_d0", &piplus_d0, "piplus_d0/f");
-	m_kshort_tree->Branch("piplus_eta", &piplus_eta, "piplus_eta/f");
+	m_kshort_tree->Branch("piplus_pt", &m_piplus_pt, "piplus_pt/D");
+	m_kshort_tree->Branch("piplus_p", &m_piplus_p, "piplus_p/D");
+	m_kshort_tree->Branch("piplus_px", &m_piplus_px, "piplus_px/D");
+	m_kshort_tree->Branch("piplus_py", &m_piplus_py, "piplus_py/D");
+	m_kshort_tree->Branch("piplus_pz", &m_piplus_pz, "piplus_pz/D");
+	m_kshort_tree->Branch("piplus_e", &m_piplus_e, "piplus_e/D");
+	m_kshort_tree->Branch("piplus_z0", &m_piplus_z0, "piplus_z0/D");
+	m_kshort_tree->Branch("piplus_d0", &m_piplus_d0, "piplus_d0/D");
+	m_kshort_tree->Branch("piplus_eta", &m_piplus_eta, "piplus_eta/D");
 
-	m_kshort_tree->Branch("piminus_pt", &piminus_pt, "piminus_pt/f");
-	m_kshort_tree->Branch("piminus_p", &piminus_p, "piminus_p/f");
-	m_kshort_tree->Branch("piminus_px", &piminus_px, "piminus_px/f");
-	m_kshort_tree->Branch("piminus_py", &piminus_py, "piminus_py/f");
-	m_kshort_tree->Branch("piminus_pz", &piminus_pz, "piminus_pz/f");
-	m_kshort_tree->Branch("piminus_e", &piminus_e, "piminus_e/f");
-	m_kshort_tree->Branch("piminus_z0", &piminus_z0, "piminus_z0/f");
-	m_kshort_tree->Branch("piminus_d0", &piminus_d0, "piminus_d0/f");
-	m_kshort_tree->Branch("piminus_eta", &piminus_eta, "piminus_eta/f");
+	m_kshort_tree->Branch("piminus_pt", &m_piminus_pt, "piminus_pt/D");
+	m_kshort_tree->Branch("piminus_p", &m_piminus_p, "piminus_p/D");
+	m_kshort_tree->Branch("piminus_px", &m_piminus_px, "piminus_px/D");
+	m_kshort_tree->Branch("piminus_py", &m_piminus_py, "piminus_py/D");
+	m_kshort_tree->Branch("piminus_pz", &m_piminus_pz, "piminus_pz/D");
+	m_kshort_tree->Branch("piminus_e", &m_piminus_e, "piminus_e/D");
+	m_kshort_tree->Branch("piminus_z0", &m_piminus_z0, "piminus_z0/D");
+	m_kshort_tree->Branch("piminus_d0", &m_piminus_d0, "piminus_d0/D");
+	m_kshort_tree->Branch("piminus_eta", &m_piminus_eta, "piminus_eta/D");
+
+	m_kshort_tree->Branch("kshort_mass", &m_kshort_mass, "kshort_mass/D");
 	return StatusCode::SUCCESS;
 }
 
@@ -142,15 +144,7 @@ StatusCode DDL::Kshort_DDL::execute()
 {
 	this->event_counter++;
 	std::cout << "Event Number : " << this->event_counter << std::endl;
-	StatusCode sc = StatusCode::SUCCESS;
-	/*
-	sc = fillKs();
-    	if ( sc.isFailure() ) 
-	{
-       		msg(MSG::ERROR) << "Ks filling failed" << endreq;
-       		return StatusCode::SUCCESS;
-    	}
-	*/  
+	StatusCode sc = StatusCode::SUCCESS;  
 	sc = finding_right_ks();
 	if (sc.isFailure())
 	{
@@ -181,8 +175,8 @@ StatusCode DDL::Kshort_DDL::finding_right_ks()
 
 
 	const xAOD::VertexContainer* vertices = nullptr;
-	CHECK(evtStore()->retrieve(vertices, "PrimaryVertices"));
-	//CHECK(evtStore()->retrieve(vertices, "VrtSecIncludive_SecondaryVertices")); // Is VrtSecIncludive_SecondaryVertices OK or any name can replace it ?
+	//CHECK(evtStore()->retrieve(vertices, "PrimaryVertices"));
+	CHECK(evtStore()->retrieve(vertices, "VrtSecInclusive_SecondaryVertices")); // Is VrtSecInclusive_SecondaryVertices OK or any name can replace it ?
 
 	// "TrackParticle": pointer to a given track that was used in vertex reconstruction
 	const xAOD::TrackParticle* piplus_track = nullptr;
@@ -196,10 +190,7 @@ StatusCode DDL::Kshort_DDL::finding_right_ks()
 	// Defining the iterator in a short and efficient way
 	for (xAOD::Vertex* vertex_ptr : *vertices)
 	{
-		if (vertex_ptr->nTrackParticles() >= 1) {
-			cout << "Partical 0 mass: " << vertex_ptr->trackParticle(0)->m() << std::endl;
-		}
-		cout << "There are " << vertex_ptr->nTrackParticles() << " in this vertex" << std::endl;
+		//cout << "There are " << vertex_ptr->nTrackParticles() << "tracks in this vertex" << std::endl;
 		// Vertices with only two tracks 
 		if (vertex_ptr->nTrackParticles() == 2)
 		{
@@ -209,48 +200,45 @@ StatusCode DDL::Kshort_DDL::finding_right_ks()
 
 			if (piplus_track->charge() < piminus_track->charge()) //in case track 0 is piMinus and track 1 is piPlus
 			{
+				//std::cout << "swaping" << std::endl;
 				std::swap(piminus_track, piplus_track);
 			}
 			// Checking whether the masses are equal to the charged pion mass
 			if (isPi(piplus_track->m()) && isPi(piminus_track->m()))
 			{
-				cout << "Both are Pis! piplus_track->charge() = " << piplus_track->charge() << " AND piminus_track->charge() = " << piminus_track->charge() << std::endl;
 				// Checking if they have charges of -1 and +1
 				if (piplus_track->charge() + piminus_track->charge() == 0 && piplus_track->charge() == 1)
 				{
-					// How to save the mass of such vertices and other parameters ?
-					// The idea is to save all these variables in form of a Tree.	
-					// Mass of the Kshort vertices after confirming that they are indeed Kshort vertices
-					// Also a storage for the Kshort vertices
-					//KshortVertices->push_back(vertex_ptr); //not sure we need it
-
-
-
 					// Saving individual track info in ttree
+					std::cout << "Pi+ and Pi found" << std::endl;					
+					std::cout << "Pi+:pt = " << piplus_track->pt() << ", Pi-:pt = "  << piminus_track->pt() << std::endl;
+					std::cout << "Pi+:z0 = " << piplus_track->z0() << ", Pi-:z0 = "  << piminus_track->z0() << std::endl;
+					std::cout << "Pi+:d0 = " << piplus_track->d0() << ", Pi-:d0 = "  << piminus_track->d0() << std::endl;
+					m_piplus_pt = piplus_track->pt();
+					m_piplus_p = piplus_track->p4().P();
+					m_piplus_px = piplus_track->p4().Px();
+					m_piplus_py = piplus_track->p4().Py();
+					m_piplus_pz = piplus_track->p4().Pz();
+					m_piplus_e = piplus_track->e();
+					m_piplus_z0 = piplus_track->z0();
+					m_piplus_d0 = piplus_track->d0();
+					m_piplus_eta = piplus_track->eta();
 
-					piplus_pt = piplus_track->pt();
-					piplus_p = piplus_track->p4().P();
-					piplus_px = piplus_track->p4().Px();
-					piplus_py = piplus_track->p4().Py();
-					piplus_pz = piplus_track->p4().Pz();
-					piplus_e = piplus_track->e();
-					piplus_z0 = piplus_track->z0();
-					piplus_d0 = piplus_track->d0();
-					piplus_eta = piplus_track->eta();
-
-					piminus_pt = piminus_track->pt();
-					piminus_p = piminus_track->p4().P();
-					piminus_px = piminus_track->p4().Px();
-					piminus_py = piminus_track->p4().Py();
-					piminus_pz = piminus_track->p4().Pz();
-					piminus_e = piminus_track->e();
-					piminus_z0 = piminus_track->z0();
-					piminus_d0 = piminus_track->d0();
-					piminus_eta = piminus_track->eta();
-
-					std::cout << "Updating the tree" << std::endl;
+					m_piminus_pt = piminus_track->pt();
+					m_piminus_p = piminus_track->p4().P();
+					m_piminus_px = piminus_track->p4().Px();
+					m_piminus_py = piminus_track->p4().Py();
+					m_piminus_pz = piminus_track->p4().Pz();
+					m_piminus_e = piminus_track->e();
+					m_piminus_z0 = piminus_track->z0();
+					m_piminus_d0 = piminus_track->d0();
+					m_piminus_eta = piminus_track->eta();
+					
+					m_kshort_mass = vertex_ptr->auxdataConst<float>("vtx_mass")/1000.0;
+					//std::cout << "Kshort Mass = " << m_kshort_mass << std::endl;
+					//std::cout << "Updating the tree" << std::endl;
 					this->m_kshort_tree->Fill();
-					std::cout << "Updated" << std::endl;
+					//std::cout << "Updated" << std::endl;
 				}
 			}
 		}
