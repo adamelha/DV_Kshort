@@ -1,10 +1,8 @@
 ##############################################################################################
 #                                                                                            #
-#     Job option file for a full athena environment for Kshort reconstruction in DDL package #
+#     Job option file for a full athena environment for Ks reconstruction in DDL package #
 #                                                                                            #
 ##############################################################################################
-
-# Place this file in DDLStudies/share/
 
 # Enable file reading
 import AthenaPoolCnvSvc.ReadAthenaPool
@@ -36,39 +34,16 @@ TriggerFlags.doTriggerConfigOnly = True
 include("RecExCommon/RecExCommon_topOptions.py")
 
 # Set events
-#theApp.EvtMax = vars().get("maxEvents", -1)
-theApp.EvtMax = 50
+theApp.EvtMax = vars().get("maxEvents", -1)
 svcMgr.EventSelector.SkipEvents = vars().get("skipEvents", 0)
 
-# Setup trigger tool
-#ToolSvc += CfgMgr.Trig__TrigDecisionTool("TrigDecisionTool",
-#                                         OutputLevel = WARNING,
-#                                         TrigDecisionKey = "xTrigDecision")
-
 # Setup THistSvc
-svc_name = "Kshort_DDL"
+svc_name = "Ks"
 svcMgr += CfgMgr.THistSvc()
-svcMgr.THistSvc.Output += ["%s DATAFILE='hist_Kshort_DDL_2.root' OPT='RECREATE'" % (svc_name)]
-
-# Required for Kshort reconstruction?
-#trackPtCut = 10000.
-
-# Setup PionCuts
-
-
-# Setup KshortCuts
-
-
-# Setup DVCuts - This was deleted for Kshort
-#                              DisabledModuleMapFile = "DisabledModuleMap_Run2_v2.root")
-#ToolSvc += CfgMgr.JetCalibrationTool("myJESTool",
-#                                     IsData=False,
-#                                     ConfigFile="JES_MC15Prerecommendation_April2015.config",
-#                                     CalibSequence="JetArea_Residual_Origin_EtaJES_GSC",
-#                                     JetCollection="AntiKt4EMTopo")
+svcMgr.THistSvc.Output += ["%s DATAFILE='hist_Ks.root' OPT='RECREATE'" % (svc_name)]
 
 # Add algorithm
 algSeq = CfgMgr.AthSequencer("AthAlgSeq")
 
 # Include your algorithms 
-algSeq += CfgMgr.DDL__Kshort_DDL("Kshort_DDL")
+algSeq += CfgMgr.DDL__Ks("Ks")

@@ -22,21 +22,25 @@ Just follow the steps: first clone, then set up the environment, then build, the
 
 ## Running the job:
 - cd into the run directory `cd WorkArea/run`
-- For convenience, copy the job options file to the run dir: `cp ../../DV_Kshort/share/jo_Kshort_DDL.py .`
-- Run the job (the piping to a log file is optional): `athena jo_Kshort_DDL.py | tee log.txt`
+- For convenience, copy the job options file to the run dir: `cp ../../DV_Kshort/share/jo_Ks.py .`
+- Run the job (the piping to a log file is optional): `athena jo_Ks.py | tee Ks.txt`
 - A .root file will be created in the run directory, ready for analysis with ROOT.
 
 
+## For this algorithm:
+The location of none of the files/directories is to be changed. They are, where they should be. Depending on the necessity in future, we might be requiring to modify the files, but their location should not be changed.
 
 
-## Kshort_DDL.cxx is the older file, which have many things but most of those are unecessary. Kshort_DDL_Niv_1Nov.cxx is the first iteration of Kshort_DDL.cxx
-## Kshort_DDL.h is the header file to the source file. This file has been modified after its creation, but we don't need to worry about that one.
-## jo_Kshort_DDL.py is the joboptions file created for Kshort analysis, although some portions have already been modified, still it needs to be modified
-## Just to remind: the .cxx and .h files are placed in the src/ directory of your DDLStudies package whereas the .py should be present in share/ of DDLStudies package. 
+## In the end (while merging Ks algorithm with the DDLStudies package):
+- "Ks.h" to be placed at ../HNL_analysis/DDLStudies/src/
+- "Ks.cxx" will also be placed at ../HNL_analysis/DDLStudies/src/
+- "jo_Ks.py" is located to ../HNL_analysis/DDLStudies/share/
+- "DDLStudies_entries.cxx" @ ../HNL_analysis/DDLStudies/src/components should be including the 'Ks' algorithm portions. Simply take the lines with 'Ks' from the ../DV_Kshort/src/components/DDLStudies_entries.cxx and add them to the original DDLStudies_entries.cxx.
+- Similarly, the original "requirements" file is to be used @ ../HNL_analysis/DDLStudies/cmt/requirements . At the moment, for Ks only algorithm, most of the lines are removed from it ../DV_Kshort/cmt/requirements.
 
 
-
-####################### Steps suggested by Avner for Kshort analysis ######################################
+####################### Steps suggested by Avner for Ks analysis ######################################
+###########################################################################################################
 1. Figure out how to add new variables to the ntuple created by the DDL code.
 2. Write the Ks—> pi+ pi- reconstruction. A good way to do it is this:
         A. If the package already performs vertex fits to 2-tracks that aren’t leptons, use those vertices. If not, need to make the vertices by ourselves:

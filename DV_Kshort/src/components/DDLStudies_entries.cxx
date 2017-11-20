@@ -1,15 +1,13 @@
-// Please place this file in DDLStudies/src/components/
-
 #include "GaudiKernel/DeclareFactoryEntries.h"
-#include "../Kshort_DDL.h"// This was added  for Kshort_DDL
+#include "../Ks.h"
 
 #ifndef XAOD_ANALYSIS
-DECLARE_NAMESPACE_ALGORITHM_FACTORY(DDL, Kshort_DDL) // This was added  for Kshort_DDL
+DECLARE_NAMESPACE_ALGORITHM_FACTORY(DDL, Ks) 
 #endif
 
 DECLARE_FACTORY_ENTRIES(DDLStudies)
 {
   #ifndef XAOD_ANALYSIS
-  DECLARE_NAMESPACE_ALGORITHM(DDL, Kshort_DDL);// This was added  for Kshort_DDL
+  DECLARE_NAMESPACE_ALGORITHM(DDL, Ks);
   #endif
 }

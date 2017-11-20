@@ -1,8 +1,5 @@
-// Copy this file to DDLStudies/src
-
-
 // DDLStudies includes
-#include "Kshort_DDL.h"
+#include "Ks.h"
 
 // framework includes
 #include "GaudiKernel/ServiceHandle.h"
@@ -45,15 +42,15 @@
 
 
 
-DDL::Kshort_DDL::Kshort_DDL( const std::string& name, ISvcLocator* pSvcLocator ) : 
+DDL::Ks::Ks( const std::string& name, ISvcLocator* pSvcLocator ) : 
    AthAnalysisAlgorithm( name, pSvcLocator ) 
 {
 
-  //declareProperty("HistSvcName", m_hist_name = "Kshort_DDL" ); 
+  //declareProperty("HistSvcName", m_hist_name = "Ks" ); 
 
 }
 
-StatusCode DDL::Kshort_DDL::initialize() 
+StatusCode DDL::Ks::initialize() 
 { 
 	std::cout << "initialize" << std::endl;
 
@@ -87,10 +84,10 @@ StatusCode DDL::Kshort_DDL::initialize()
 	//// ATH_MSG_INFO ("Initializing " << name() << "...");
 
 
-	m_kshort_tree = new TTree("KshortTTree", "Kshort Tree!");
+	m_kshort_tree = new TTree("KsTTree", "Ks Tree!");
 
 
-	CHECK(histSvc->regTree("/Kshort_DDL/m_kshort_tree", m_kshort_tree));
+	CHECK(histSvc->regTree("/Ks/m_kshort_tree", m_kshort_tree));
 	//CHECK( histSvc->regHist("/HNL/m_nTracks",m_nTracks) );
 
 
@@ -118,7 +115,7 @@ StatusCode DDL::Kshort_DDL::initialize()
 	return StatusCode::SUCCESS;
 }
 
-StatusCode DDL::Kshort_DDL::finalize() 
+StatusCode DDL::Ks::finalize() 
 {
 
   //// ATH_MSG_INFO ("Finalizing " << name() << "...");
@@ -126,7 +123,7 @@ StatusCode DDL::Kshort_DDL::finalize()
   return StatusCode::SUCCESS;
 }
 
-StatusCode DDL::Kshort_DDL::execute() 
+StatusCode DDL::Ks::execute() 
 {
 	this->event_counter++;
 	std::cout << "Event Number : " << this->event_counter << std::endl;
@@ -143,7 +140,7 @@ StatusCode DDL::Kshort_DDL::execute()
 
 
 // Function for charged pion mass (equating float to some number inside a condition is not recommended, hence this function was made) 
-bool DDL::Kshort_DDL::isPi(float piMass)
+bool DDL::Ks::isPi(float piMass)
 {
         float actual_pi_mass = 139.57061; // MeV (taken from recent PDG, http://pdglive.lbl.gov/Particle.action?init=0&node=S008)
         //float margin_of_error = 0.00024; // MeV (taken from recent PDG, http://pdglive.lbl.gov/Particle.action?init=0&node=S008)
@@ -152,7 +149,7 @@ bool DDL::Kshort_DDL::isPi(float piMass)
 }
 
 
-StatusCode DDL::Kshort_DDL::finding_right_ks()
+StatusCode DDL::Ks::finding_right_ks()
 {
 
 	StatusCode sc = StatusCode::SUCCESS;
@@ -220,7 +217,8 @@ StatusCode DDL::Kshort_DDL::finding_right_ks()
 					m_piminus_d0 = piminus_track->d0();
 					m_piminus_eta = piminus_track->eta();
 					
-					m_kshort_mass = vertex_ptr->auxdataConst<float>("vtx_mass")/1000.0;
+					m_kshort_mass = vertex_ptr->auxdataConst<float>("vtx_mass");
+					//m_kshort_mass = vertex_ptr->auxdataConst<float>("vtx_mass")/1000.0;
 					//std::cout << "Kshort Mass = " << m_kshort_mass << std::endl;
 					//std::cout << "Updating the tree" << std::endl;
 					this->m_kshort_tree->Fill();
