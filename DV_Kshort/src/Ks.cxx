@@ -238,5 +238,6 @@ StatusCode DDL::Ks::finding_right_ks()
 			}
 		}
 
-	}	
+	}
+	return sc;	
 }
