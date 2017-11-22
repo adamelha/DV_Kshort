@@ -16,6 +16,8 @@
 #include "TMath.h"
 #include "TROOT.h"
 
+#include <TLorentzVector.h>
+
 using namespace std;
 
 // forward declaration
@@ -63,7 +65,7 @@ namespace DDL {
 			// Variables of Ks for the TTree
 			Double_t m_kshort_mass=0;	// mass of Ks vertex
 			Double_t m_kshort_rDV= 0;       // r_DV of Ks 
-			Double_t m_kshort_th=  0;       // cot theta calulation with Ks vertex 
+			Double_t m_kshort_theta=  0;       // cot theta calulation with Ks vertex 
 			Double_t m_kshort_eta= 0;       // pseudo rapidity of Ks
 			Double_t m_kshort_e=   0;       // energy of Ks
 			Double_t m_kshort_pt=  0;       // transverse momemntum of Ks
@@ -71,6 +73,8 @@ namespace DDL {
 			Double_t m_kshort_px=  0;       // x component of momentum of Ks
 			Double_t m_kshort_py=  0;       // y component of momentum of Ks
 			Double_t m_kshort_pz=  0;       // z component of momentum of Ks
+			
+			Double_t m_kshort_pTCalc = 0; 
 
         	public: 
             		Ks( const std::string& name, ISvcLocator* pSvcLocator );

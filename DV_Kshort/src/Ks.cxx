@@ -113,7 +113,7 @@ StatusCode DDL::Ks::initialize()
 	// Branches for Ks
 	m_kshort_tree->Branch("kshort_mass", &m_kshort_mass, "kshort_mass/D");
 	m_kshort_tree->Branch("kshort_rDV",  &m_kshort_rDV,  "kshort_rDV/D" );
-	m_kshort_tree->Branch("kshort_cottheta",  &m_kshort_th,  "kshort_cottheta/D" );
+	m_kshort_tree->Branch("kshort_theta",  &m_kshort_theta,  "kshort_theta/D" );
 	m_kshort_tree->Branch("kshort_eta",  &m_kshort_eta,  "kshort_eta/D" );
 	m_kshort_tree->Branch("kshort_e",    &m_kshort_e,    "kshort_e/D"   );
 	m_kshort_tree->Branch("kshort_pt",   &m_kshort_pt,   "kshort_pt/D"  );
@@ -121,6 +121,8 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("kshort_px",   &m_kshort_px,   "kshort_px/D"  );
 	m_kshort_tree->Branch("kshort_py",   &m_kshort_py,   "kshort_py/D"  );
 	m_kshort_tree->Branch("kshort_pz",   &m_kshort_pz,   "kshort_pz/D"  );
+	m_kshort_tree->Branch("kshort_pTCalc", &m_kshort_pTCalc,"kshort_pTCalc/D");
+	//m_kshort_tree->Branch("kshort_invMass", &m_kshort_invMass,"kshort_invMass/D");
 	return StatusCode::SUCCESS;
 }
 
@@ -162,7 +164,6 @@ StatusCode DDL::Ks::finding_right_ks()
 {
 
 	StatusCode sc = StatusCode::SUCCESS;
-
 	//----------------------------------------------------------------------------
 
 
@@ -174,9 +175,10 @@ StatusCode DDL::Ks::finding_right_ks()
 	const xAOD::TrackParticle* piplus_track = nullptr;
 	const xAOD::TrackParticle* piminus_track = nullptr;
 
+	//TLorentzVector p4_sum;
+
 	// Vertex container for Kshorts
 	//xAOD::VertexContainer* kshortVertices = new VertexContainer();
-
 
 	// Looping over the vertices to find Kshort vertices which decay to pi+ and pi-
 	// Defining the iterator in a short and efficient way
@@ -192,7 +194,6 @@ StatusCode DDL::Ks::finding_right_ks()
 
 			if (piplus_track->charge() < piminus_track->charge()) //in case track 0 is piMinus and track 1 is piPlus
 			{
-				//std::cout << "Swapping" << std::endl;
 				std::swap(piminus_track, piplus_track);
 			}
 			// Checking whether the masses are equal to the charged pion mass
@@ -215,6 +216,7 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_piplus_z0   = piplus_track->z0();
 					m_piplus_d0   = piplus_track->d0();
 					m_piplus_eta  = piplus_track->eta();
+				
 
 					m_piminus_pt  = piminus_track->pt();
 					m_piminus_p   = piminus_track->p4().P();
@@ -227,17 +229,25 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_piminus_eta = piminus_track->eta();
 					
 					m_kshort_mass = vertex_ptr->auxdataConst<float>("vtx_mass");
-					m_kshort_rDV  = sqrt (vertex_ptr->x()*vertex_ptr->x() + vertex_ptr->y()*vertex_ptr->y());
-														
-					//m_kshort_mass = vertex_ptr->auxdataConst<float>("vtx_mass")/1000.0;
-					//std::cout << "Kshort Mass = " << m_kshort_mass << std::endl;
-					//std::cout << "Updating the tree" << std::endl;
+					m_kshort_rDV  = sqrt (pow(vertex_ptr->x(),2) + pow(vertex_ptr->y(),2));
+					//m_kshort_eta= 
+					//m_kshort_e=  
+					m_kshort_px = vertex_ptr->auxdataConst<float>("vtx_px");
+					m_kshort_py = vertex_ptr->auxdataConst<float>("vtx_py");
+					m_kshort_pz = vertex_ptr->auxdataConst<float>("vtx_pz");
+
+					m_kshort_pt = vertex_ptr->auxdataConst<float>("pT");
+					m_kshort_pTCalc = sqrt (pow(m_kshort_px ,2) + pow(m_kshort_py ,2));
+
+					m_kshort_p  = sqrt(pow(m_kshort_px,2) + pow(m_kshort_py,2) + pow(m_kshort_pz,2));
+					
+					m_kshort_theta=acos(m_kshort_pz/m_kshort_p);
+
+
 					this->m_kshort_tree->Fill();
-					//std::cout << "Updated" << std::endl;
 				}
 			}
 		}
-
 	}
 	return sc;	
 }
