@@ -58,5 +58,8 @@ if [[ "$RUCIO" == "yes" ]]; then
 	lsetup rucio
 	voms-proxy-init -voms atlas
 fi
+
+lsetup panda
+
 echo 'Enviornment set up successfully!'
 
