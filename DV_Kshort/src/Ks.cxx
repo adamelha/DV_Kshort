@@ -85,8 +85,6 @@ StatusCode DDL::Ks::initialize()
 
 
 	m_kshort_tree = new TTree("KsTTree", "Ks Tree!");
-
-
 	CHECK(histSvc->regTree("/Ks/m_kshort_tree", m_kshort_tree));
 
         // Branches for pi+
@@ -124,9 +122,14 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("kshort_invMass",&m_kshort_invMass,"kshort_invMass/D");
 	m_kshort_tree->Branch("kshort_alpha",&m_kshort_alpha, "kshort_alpha/D");
 
-	m_kshort_tree->Branch("primary_vertex_x",&m_primary_vertex_x,"primary_vertex_x/D");
-	m_kshort_tree->Branch("primary_vertex_y",&m_primary_vertex_y,"primary_vertex_y/D");
-	m_kshort_tree->Branch("primary_vertex_z",&m_primary_vertex_z,"primary_vertex_z/D");
+
+
+	m_primary_vertices_tree = new TTree("pVtxTree", "pVtxTree");
+	CHECK(histSvc->regTree("/Ks/m_primary_vertices_tree", m_primary_vertices_tree));
+	m_primary_vertices_tree->Branch("primary_vertex_x",&m_primary_vertex_x,"primary_vertex_x/D");
+	m_primary_vertices_tree->Branch("primary_vertex_y",&m_primary_vertex_y,"primary_vertex_y/D");
+	m_primary_vertices_tree->Branch("primary_vertex_z",&m_primary_vertex_z,"primary_vertex_z/D");
+
 
 
 	return StatusCode::SUCCESS;
@@ -179,15 +182,13 @@ StatusCode DDL::Ks::finding_right_ks()
 	CHECK(evtStore()->retrieve(primary_vertices, "PrimaryVertices"));
 	CHECK(evtStore()->retrieve(secondary_vertices , "VrtSecInclusive_SecondaryVertices")); // Is VrtSecInclusive_SecondaryVertices OK or any name can replace it ?
 
-	std::cout << primary_vertices->size() << " : " << secondary_vertices->size() << std::endl;
-
 
 	// "TrackParticle": pointer to a given track that was used in vertex reconstruction
 	const xAOD::TrackParticle* piplus_track = nullptr;
 	const xAOD::TrackParticle* piminus_track = nullptr;
 
 	TLorentzVector p4_sum;
-	Double_t r;	
+	Double_t rdvDotPt;
 
 	// Looping over the vertices to find Kshort vertices which decay to pi+ and pi-
 	// Defining the iterator in a short and efficient way
@@ -240,35 +241,34 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_kshort_invMass = p4_sum.Mag();
 
 					m_kshort_mass = vertex_ptr->auxdataConst<float>("vtx_mass");
-					m_kshort_rDV  = sqrt (pow(vertex_ptr->x(),2) + pow(vertex_ptr->y(),2)); 
+					m_kshort_rDV  = sqrt(pow(vertex_ptr->x(),2) + pow(vertex_ptr->y(),2)); 
 					m_kshort_e  = sqrt(pow(m_kshort_mass ,2)+pow(m_kshort_p ,2)); 
 					m_kshort_px = vertex_ptr->auxdataConst<float>("vtx_px");
 					m_kshort_py = vertex_ptr->auxdataConst<float>("vtx_py");
 					m_kshort_pz = vertex_ptr->auxdataConst<float>("vtx_pz");
 
 					m_kshort_pt = vertex_ptr->auxdataConst<float>("pT");
-					m_kshort_pTCalc = sqrt (pow(m_kshort_px ,2) + pow(m_kshort_py ,2));
+					m_kshort_pTCalc = sqrt(pow(m_kshort_px ,2) + pow(m_kshort_py ,2));
 
 					m_kshort_p  = sqrt(pow(m_kshort_px,2) + pow(m_kshort_py,2) + pow(m_kshort_pz,2));
 					
 					m_kshort_theta=acos(m_kshort_pz/m_kshort_p);
 					m_kshort_eta=log(1.0/(tan(m_kshort_theta/2)));
 
-					//r = sqrt (pow(vertex_ptr->x(),2) + pow(vertex_ptr->y(),2) + pow(vertex_ptr->z(),2));
-					m_kshort_alpha = acos(abs(vertex_ptr->x()*m_kshort_px+vertex_ptr->y()*m_kshort_py)/(m_kshort_rDV*m_kshort_pTCalc));
+					rdvDotPt=vertex_ptr->x()*m_kshort_px+vertex_ptr->y()*m_kshort_py;
+					m_kshort_alpha = acos(rdvDotPt/(m_kshort_rDV*m_kshort_pTCalc));
 
 					this->m_kshort_tree->Fill();
 				}
 			}
 		}
-	}
+	}	
 	for (xAOD::Vertex* vertex_ptr : *primary_vertices )
 	{
 		m_primary_vertex_x = vertex_ptr->x();
 		m_primary_vertex_y = vertex_ptr->y();
 		m_primary_vertex_z = vertex_ptr->z();
-		this->m_kshort_tree->Fill();
+		this->m_primary_vertices_tree->Fill();
 	}
-
 	return sc;	
 }

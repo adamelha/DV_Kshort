@@ -39,6 +39,8 @@ namespace DDL {
 			int event_counter=0;
 
 			TTree* m_kshort_tree = nullptr;
+			TTree* m_primary_vertices_tree = nullptr;
+
 			ITHistSvc * m_thistSvc = nullptr;
 			StoreGateSvc* m_storeGate = nullptr;
 
