@@ -88,7 +88,6 @@ StatusCode DDL::Ks::initialize()
 
 
 	CHECK(histSvc->regTree("/Ks/m_kshort_tree", m_kshort_tree));
-	//CHECK( histSvc->regHist("/HNL/m_nTracks",m_nTracks) );
 
         // Branches for pi+
 	m_kshort_tree->Branch("piplus_pt",   &m_piplus_pt,   "piplus_pt/D"  );
@@ -113,7 +112,7 @@ StatusCode DDL::Ks::initialize()
 	// Branches for Ks
 	m_kshort_tree->Branch("kshort_mass", &m_kshort_mass, "kshort_mass/D");
 	m_kshort_tree->Branch("kshort_rDV",  &m_kshort_rDV,  "kshort_rDV/D" );
-	m_kshort_tree->Branch("kshort_theta",  &m_kshort_theta,  "kshort_theta/D" );
+	m_kshort_tree->Branch("kshort_theta",&m_kshort_theta,  "kshort_theta/D" );
 	m_kshort_tree->Branch("kshort_eta",  &m_kshort_eta,  "kshort_eta/D" );
 	m_kshort_tree->Branch("kshort_e",    &m_kshort_e,    "kshort_e/D"   );
 	m_kshort_tree->Branch("kshort_pt",   &m_kshort_pt,   "kshort_pt/D"  );
@@ -121,8 +120,15 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("kshort_px",   &m_kshort_px,   "kshort_px/D"  );
 	m_kshort_tree->Branch("kshort_py",   &m_kshort_py,   "kshort_py/D"  );
 	m_kshort_tree->Branch("kshort_pz",   &m_kshort_pz,   "kshort_pz/D"  );
-	m_kshort_tree->Branch("kshort_pTCalc", &m_kshort_pTCalc,"kshort_pTCalc/D");
-	//m_kshort_tree->Branch("kshort_invMass", &m_kshort_invMass,"kshort_invMass/D");
+	m_kshort_tree->Branch("kshort_pTCalc",&m_kshort_pTCalc,"kshort_pTCalc/D");
+	m_kshort_tree->Branch("kshort_invMass",&m_kshort_invMass,"kshort_invMass/D");
+	m_kshort_tree->Branch("kshort_alpha",&m_kshort_alpha, "kshort_alpha/D");
+
+	m_kshort_tree->Branch("primary_vertex_x",&m_primary_vertex_x,"primary_vertex_x/D");
+	m_kshort_tree->Branch("primary_vertex_y",&m_primary_vertex_y,"primary_vertex_y/D");
+	m_kshort_tree->Branch("primary_vertex_z",&m_primary_vertex_z,"primary_vertex_z/D");
+
+
 	return StatusCode::SUCCESS;
 }
 
@@ -137,7 +143,7 @@ StatusCode DDL::Ks::finalize()
 StatusCode DDL::Ks::execute() 
 {
 	this->event_counter++;
-	std::cout << "Event Number : " << this->event_counter << std::endl;
+	//std::cout << "Event Number : " << this->event_counter << std::endl;
 	StatusCode sc = StatusCode::SUCCESS;  
 	sc = finding_right_ks();
 	if (sc.isFailure())
@@ -167,24 +173,26 @@ StatusCode DDL::Ks::finding_right_ks()
 	//----------------------------------------------------------------------------
 
 
-	const xAOD::VertexContainer* vertices = nullptr;
-	//CHECK(evtStore()->retrieve(vertices, "PrimaryVertices"));
-	CHECK(evtStore()->retrieve(vertices, "VrtSecInclusive_SecondaryVertices")); // Is VrtSecInclusive_SecondaryVertices OK or any name can replace it ?
+	const xAOD::VertexContainer* secondary_vertices = nullptr;
+	const xAOD::VertexContainer* primary_vertices = nullptr;
+
+	CHECK(evtStore()->retrieve(primary_vertices, "PrimaryVertices"));
+	CHECK(evtStore()->retrieve(secondary_vertices , "VrtSecInclusive_SecondaryVertices")); // Is VrtSecInclusive_SecondaryVertices OK or any name can replace it ?
+
+	std::cout << primary_vertices->size() << " : " << secondary_vertices->size() << std::endl;
+
 
 	// "TrackParticle": pointer to a given track that was used in vertex reconstruction
 	const xAOD::TrackParticle* piplus_track = nullptr;
 	const xAOD::TrackParticle* piminus_track = nullptr;
 
-	//TLorentzVector p4_sum;
-
-	// Vertex container for Kshorts
-	//xAOD::VertexContainer* kshortVertices = new VertexContainer();
+	TLorentzVector p4_sum;
+	Double_t r;	
 
 	// Looping over the vertices to find Kshort vertices which decay to pi+ and pi-
 	// Defining the iterator in a short and efficient way
-	for (xAOD::Vertex* vertex_ptr : *vertices)
+	for (xAOD::Vertex* vertex_ptr : *secondary_vertices )
 	{
-		//cout << "There are " << vertex_ptr->nTrackParticles() << "tracks in this vertex" << std::endl;
 		// Vertices with only two tracks 
 		if (vertex_ptr->nTrackParticles() == 2)
 		{
@@ -203,10 +211,10 @@ StatusCode DDL::Ks::finding_right_ks()
 				if (piplus_track->charge() + piminus_track->charge() == 0 && piplus_track->charge() == 1)
 				{
 					// Saving individual track info in ttree
-					std::cout << "Pi+ and Pi found" << std::endl;					
-					std::cout << "Pi+:pt = " << piplus_track->pt() << ", Pi-:pt = "  << piminus_track->pt() << std::endl;
-					std::cout << "Pi+:z0 = " << piplus_track->z0() << ", Pi-:z0 = "  << piminus_track->z0() << std::endl;
-					std::cout << "Pi+:d0 = " << piplus_track->d0() << ", Pi-:d0 = "  << piminus_track->d0() << std::endl;
+					//std::cout << "Pi+ and Pi found" << std::endl;					
+					//std::cout << "Pi+:pt = " << piplus_track->pt() << ", Pi-:pt = "  << piminus_track->pt() << std::endl;
+					//std::cout << "Pi+:z0 = " << piplus_track->z0() << ", Pi-:z0 = "  << piminus_track->z0() << std::endl;
+					//std::cout << "Pi+:d0 = " << piplus_track->d0() << ", Pi-:d0 = "  << piminus_track->d0() << std::endl;
 					m_piplus_pt   = piplus_track->pt();
 					m_piplus_p    = piplus_track->p4().P();
 					m_piplus_px   = piplus_track->p4().Px();
@@ -228,10 +236,12 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_piminus_d0  = piminus_track->d0();
 					m_piminus_eta = piminus_track->eta();
 					
+					p4_sum = piplus_track->p4() + piminus_track->p4();
+					m_kshort_invMass = p4_sum.Mag();
+
 					m_kshort_mass = vertex_ptr->auxdataConst<float>("vtx_mass");
-					m_kshort_rDV  = sqrt (pow(vertex_ptr->x(),2) + pow(vertex_ptr->y(),2));
-					//m_kshort_eta= 
-					//m_kshort_e=  
+					m_kshort_rDV  = sqrt (pow(vertex_ptr->x(),2) + pow(vertex_ptr->y(),2)); 
+					m_kshort_e  = sqrt(pow(m_kshort_mass ,2)+pow(m_kshort_p ,2)); 
 					m_kshort_px = vertex_ptr->auxdataConst<float>("vtx_px");
 					m_kshort_py = vertex_ptr->auxdataConst<float>("vtx_py");
 					m_kshort_pz = vertex_ptr->auxdataConst<float>("vtx_pz");
@@ -242,12 +252,23 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_kshort_p  = sqrt(pow(m_kshort_px,2) + pow(m_kshort_py,2) + pow(m_kshort_pz,2));
 					
 					m_kshort_theta=acos(m_kshort_pz/m_kshort_p);
+					m_kshort_eta=log(1.0/(tan(m_kshort_theta/2)));
 
+					//r = sqrt (pow(vertex_ptr->x(),2) + pow(vertex_ptr->y(),2) + pow(vertex_ptr->z(),2));
+					m_kshort_alpha = acos(abs(vertex_ptr->x()*m_kshort_px+vertex_ptr->y()*m_kshort_py)/(m_kshort_rDV*m_kshort_pTCalc));
 
 					this->m_kshort_tree->Fill();
 				}
 			}
 		}
 	}
+	for (xAOD::Vertex* vertex_ptr : *primary_vertices )
+	{
+		m_primary_vertex_x = vertex_ptr->x();
+		m_primary_vertex_y = vertex_ptr->y();
+		m_primary_vertex_z = vertex_ptr->z();
+		this->m_kshort_tree->Fill();
+	}
+
 	return sc;	
 }
