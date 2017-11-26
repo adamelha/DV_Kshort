@@ -86,7 +86,7 @@ StatusCode DDL::Ks::initialize()
 
 	m_kshort_tree = new TTree("KsTTree", "Ks Tree!");
 	CHECK(histSvc->regTree("/Ks/m_kshort_tree", m_kshort_tree));
-
+	// For detailed description of the branches, please refer to Ks.h (the header file)	
         // Branches for pi+
 	m_kshort_tree->Branch("piplus_pt",   &m_piplus_pt,   "piplus_pt/D"  );
 	m_kshort_tree->Branch("piplus_p",    &m_piplus_p,    "piplus_p/D"   );
@@ -121,15 +121,12 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("kshort_pTCalc",&m_kshort_pTCalc,"kshort_pTCalc/D");
 	m_kshort_tree->Branch("kshort_invMass",&m_kshort_invMass,"kshort_invMass/D");
 	m_kshort_tree->Branch("kshort_alpha",&m_kshort_alpha, "kshort_alpha/D");
-
-
-
+	// Branches for Ks primary vertices, which are stored in a different TTree
 	m_primary_vertices_tree = new TTree("pVtxTree", "pVtxTree");
 	CHECK(histSvc->regTree("/Ks/m_primary_vertices_tree", m_primary_vertices_tree));
 	m_primary_vertices_tree->Branch("primary_vertex_x",&m_primary_vertex_x,"primary_vertex_x/D");
 	m_primary_vertices_tree->Branch("primary_vertex_y",&m_primary_vertex_y,"primary_vertex_y/D");
 	m_primary_vertices_tree->Branch("primary_vertex_z",&m_primary_vertex_z,"primary_vertex_z/D");
-
 
 
 	return StatusCode::SUCCESS;
@@ -179,8 +176,8 @@ StatusCode DDL::Ks::finding_right_ks()
 	const xAOD::VertexContainer* secondary_vertices = nullptr;
 	const xAOD::VertexContainer* primary_vertices = nullptr;
 
-	CHECK(evtStore()->retrieve(primary_vertices, "PrimaryVertices"));
-	CHECK(evtStore()->retrieve(secondary_vertices , "VrtSecInclusive_SecondaryVertices")); // Is VrtSecInclusive_SecondaryVertices OK or any name can replace it ?
+	CHECK(evtStore()->retrieve(primary_vertices, "PrimaryVertices")); // For primary vertices
+	CHECK(evtStore()->retrieve(secondary_vertices , "VrtSecInclusive_SecondaryVertices")); // For secondary vertices
 
 
 	// "TrackParticle": pointer to a given track that was used in vertex reconstruction
@@ -201,21 +198,24 @@ StatusCode DDL::Ks::finding_right_ks()
 			piplus_track = vertex_ptr->trackParticle(0);
 			piminus_track = vertex_ptr->trackParticle(1);
 
-			if (piplus_track->charge() < piminus_track->charge()) //in case track 0 is piMinus and track 1 is piPlus
+			if (piplus_track->charge() < piminus_track->charge()) //in case track#0 is pi- and track#1 is pi+
 			{
 				std::swap(piminus_track, piplus_track);
 			}
-			// Checking whether the masses are equal to the charged pion mass
+			// Checking whether the masses are equal to the charged pion mass or not
 			if (isPi(piplus_track->m()) && isPi(piminus_track->m()))
 			{
-				// Checking if they have charges of -1 and +1
+				// Checking if the tracks have charges of -1 and +1
 				if (piplus_track->charge() + piminus_track->charge() == 0 && piplus_track->charge() == 1)
 				{
-					// Saving individual track info in ttree
+					// Saving individual track info in a TTree
 					//std::cout << "Pi+ and Pi found" << std::endl;					
 					//std::cout << "Pi+:pt = " << piplus_track->pt() << ", Pi-:pt = "  << piminus_track->pt() << std::endl;
 					//std::cout << "Pi+:z0 = " << piplus_track->z0() << ", Pi-:z0 = "  << piminus_track->z0() << std::endl;
 					//std::cout << "Pi+:d0 = " << piplus_track->d0() << ", Pi-:d0 = "  << piminus_track->d0() << std::endl;
+					
+					
+					// pi+ track info
 					m_piplus_pt   = piplus_track->pt();
 					m_piplus_p    = piplus_track->p4().P();
 					m_piplus_px   = piplus_track->p4().Px();
@@ -225,8 +225,7 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_piplus_z0   = piplus_track->z0();
 					m_piplus_d0   = piplus_track->d0();
 					m_piplus_eta  = piplus_track->eta();
-				
-
+					// pi- track info
 					m_piminus_pt  = piminus_track->pt();
 					m_piminus_p   = piminus_track->p4().P();
 					m_piminus_px  = piminus_track->p4().Px();
@@ -236,25 +235,21 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_piminus_z0  = piminus_track->z0();
 					m_piminus_d0  = piminus_track->d0();
 					m_piminus_eta = piminus_track->eta();
-					
+					// Info. related to both pi+ and pi tracks
 					p4_sum = piplus_track->p4() + piminus_track->p4();
 					m_kshort_invMass = p4_sum.Mag();
-
+					// Ks info
 					m_kshort_mass = vertex_ptr->auxdataConst<float>("vtx_mass");
 					m_kshort_rDV  = sqrt(pow(vertex_ptr->x(),2) + pow(vertex_ptr->y(),2)); 
 					m_kshort_e  = sqrt(pow(m_kshort_mass ,2)+pow(m_kshort_p ,2)); 
 					m_kshort_px = vertex_ptr->auxdataConst<float>("vtx_px");
 					m_kshort_py = vertex_ptr->auxdataConst<float>("vtx_py");
 					m_kshort_pz = vertex_ptr->auxdataConst<float>("vtx_pz");
-
 					m_kshort_pt = vertex_ptr->auxdataConst<float>("pT");
 					m_kshort_pTCalc = sqrt(pow(m_kshort_px ,2) + pow(m_kshort_py ,2));
-
 					m_kshort_p  = sqrt(pow(m_kshort_px,2) + pow(m_kshort_py,2) + pow(m_kshort_pz,2));
-					
 					m_kshort_theta=acos(m_kshort_pz/m_kshort_p);
 					m_kshort_eta=log(1.0/(tan(m_kshort_theta/2)));
-
 					rdvDotPt=vertex_ptr->x()*m_kshort_px+vertex_ptr->y()*m_kshort_py;
 					m_kshort_alpha = acos(rdvDotPt/(m_kshort_rDV*m_kshort_pTCalc));
 
@@ -263,11 +258,12 @@ StatusCode DDL::Ks::finding_right_ks()
 			}
 		}
 	}	
-	for (xAOD::Vertex* vertex_ptr : *primary_vertices )
+	for (xAOD::Vertex* vertex_ptr : *primary_vertices ) // Info. related to the Ks primary vertices
 	{
 		m_primary_vertex_x = vertex_ptr->x();
 		m_primary_vertex_y = vertex_ptr->y();
 		m_primary_vertex_z = vertex_ptr->z();
+
 		this->m_primary_vertices_tree->Fill();
 	}
 	return sc;	
