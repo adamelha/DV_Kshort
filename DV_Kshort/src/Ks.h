@@ -15,7 +15,7 @@
 #include "TCanvas.h"
 #include "TMath.h"
 #include "TROOT.h"
-
+#include <vector>
 #include <TLorentzVector.h>
 
 using namespace std;
@@ -43,10 +43,13 @@ namespace DDL {
 
 			TTree* m_truth_kshort_tree = nullptr;
 
-
+			std::vector<xAOD::Vertex*> m_kshort_reco_vtx_list;
 			ITHistSvc * m_thistSvc = nullptr;
 			StoreGateSvc* m_storeGate = nullptr;
-
+			
+			size_t m_total_rec_ks = 0;
+			size_t total_rec_ks_hits = 0;
+			
 			// Variables of pi+ for the TTree
 			Double_t m_piplus_pt 	= 0; 	// Transverse momentum of pi+ track
 			Double_t m_piplus_p  	= 0; 	// Momentum magnitude of pi+ track

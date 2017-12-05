@@ -1,5 +1,6 @@
 // DDLStudies includes
 #include "Ks.h"
+#include "xAODTruth/xAODTruthHelpers.h"
 
 // framework includes
 #include "GaudiKernel/ServiceHandle.h"
@@ -175,7 +176,9 @@ StatusCode DDL::Ks::finalize()
 {
 
   //// ATH_MSG_INFO ("Finalizing " << name() << "...");
-
+  std::cout << "Total number of K Short particles reconstructed: " << m_total_rec_ks << "\n";
+  std::cout << "Out of the reconstructed K Short particles " << total_rec_ks_hits << " were actually true\n";
+  std::cout << "Success rate: " << (double)total_rec_ks_hits / (double)m_total_rec_ks << "\n";
   return StatusCode::SUCCESS;
 }
 
@@ -217,7 +220,10 @@ StatusCode DDL::Ks::finding_right_ks()
 
 	StatusCode sc = StatusCode::SUCCESS;
 	//----------------------------------------------------------------------------
+	const xAOD::TruthVertexContainer* truthVertexContainer = 0;
+	StatusCode sc2=m_storeGate->retrieve(truthVertexContainer, "TruthVertices");
 
+	int kshort_hits = 0;
 
 	const xAOD::VertexContainer* secondary_vertices = nullptr;
 	const xAOD::VertexContainer* primary_vertices = nullptr;
@@ -240,7 +246,7 @@ StatusCode DDL::Ks::finding_right_ks()
 		// Vertices with only two tracks 
 		if (vertex_ptr->nTrackParticles() == 2)
 		{
-			
+			// K short pidType is 310, (or PDG::pidType::K_S0)
 			piplus_track = vertex_ptr->trackParticle(0);
 			piminus_track = vertex_ptr->trackParticle(1);
 
@@ -254,14 +260,39 @@ StatusCode DDL::Ks::finding_right_ks()
 				// Checking if the tracks have charges of -1 and +1
 				if (piplus_track->charge() + piminus_track->charge() == 0 && piplus_track->charge() == 1)
 				{
-					// Saving individual track info in a TTree
-					//std::cout << "Pi+ and Pi found" << std::endl;					
-					//std::cout << "Pi+:pt = " << piplus_track->pt() << ", Pi-:pt = "  << piminus_track->pt() << std::endl;
-					//std::cout << "Pi+:z0 = " << piplus_track->z0() << ", Pi-:z0 = "  << piminus_track->z0() << std::endl;
-					//std::cout << "Pi+:d0 = " << piplus_track->d0() << ", Pi-:d0 = "  << piminus_track->d0() << std::endl;
+					
+					// We decide that these pions have originated from k short
+					m_total_rec_ks++;
+					
+					// For MC testing
+					// Currently barcode is of no use
+					double piplus_barcod = -999;
+					
+					// Get truth particle from pi+
+					const xAOD::TruthParticle *piplus_truth = xAOD::TruthHelpers::getTruthParticle(*piplus_track);
+					if (piplus_truth) {
+						std::cout << "found true pi!!\n";
+						
+						piplus_barcod = piplus_truth->barcode();						
+						
+						// Iterate over parents of the pion hoping to find a k short
+						// Should we limit ourselves to one parent?
+						for (int i = 0; i < piplus_truth->nParents(); i++) {
+							const xAOD::TruthParticle *potential_truth_ks = piplus_truth->parent(i);
+							std::cout << "Found parent, with pdgid " << potential_truth_ks->pdgId() << "\n";
+							// PDG::pidType::K_S0 is 310
+							if (potential_truth_ks->pdgId() == 310) {
+								// A KSHORT hit!
+								total_rec_ks_hits++;
+							}
+						}
+					
+					} else {
+						std::cout << "Unable to get truth particle from these pions for some reason\n";
+					}
 					
 					
-					// pi+ track info
+					
 					m_piplus_pt   = piplus_track->pt();
 					m_piplus_p    = piplus_track->p4().P();
 					m_piplus_px   = piplus_track->p4().Px();
@@ -312,6 +343,7 @@ StatusCode DDL::Ks::finding_right_ks()
 
 		this->m_primary_vertices_tree->Fill();
 	}
+
 	return sc;	
 }
 
@@ -335,11 +367,12 @@ StatusCode DDL::Ks::finding_truth_ks()
 
 	// Looping over the truth vertices to find Kshort vertices which decay to pi+ and pi-
 	// Defining the iterator in a short and efficient way
+	
 	for (xAOD::TruthVertex* truth_vertex_ptr : *truth_vertices)
 	{
-		std::cout << "incoming : " << truth_vertex_ptr->nIncomingParticles() << std::endl;
-		std::cout << "outgoing : " << truth_vertex_ptr->nOutgoingParticles() << std::endl;
-
+		//std::cout << "incoming : " << truth_vertex_ptr->nIncomingParticles() << std::endl;
+		//std::cout << "outgoing : " << truth_vertex_ptr->nOutgoingParticles() << std::endl;
+		
 		// Vertices with only two tracks
 		if (truth_vertex_ptr->nOutgoingParticles() == 2)
 		{
@@ -406,11 +439,12 @@ StatusCode DDL::Ks::finding_truth_ks()
 				rdvDotPt=vertex_ptr->x()*m_kshort_px+vertex_ptr->y()*m_kshort_py;
 				m_truth_kshort_alpha = acos(rdvDotPt/(m_kshort_rDV*m_kshort_pTCalc));
 				*/
-				this->m_truth_kshort_tree->Fill();
+				//this->m_truth_kshort_tree->Fill();
 			}
 		}
 	}
-	/*	
+	
+	
 	for (xAOD::Vertex* vertex_ptr : *primary_vertices ) // Info. related to the Ks primary vertices
 	{
 		m_primary_vertex_x = vertex_ptr->x();
@@ -419,7 +453,7 @@ StatusCode DDL::Ks::finding_truth_ks()
 
 		this->m_primary_vertices_tree->Fill();
 	}
-	*/
+	
 	return sc;	
 }
 
