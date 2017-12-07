@@ -90,43 +90,10 @@ namespace DDL {
 			Double_t m_primary_vertex_z = 0;// z position of Ks primary vertex (from Primary vertex container, which has different size from the secondary one)
 
 
-			//Variables related to truth particles
-			// Variables of pi+ for the TTree
-			Double_t m_truth_piplus_pt 	= 0; 	// Transverse momentum of pi+ track
-			Double_t m_truth_piplus_p  	= 0; 	// Momentum magnitude of pi+ track
-			Double_t m_truth_piplus_px 	= 0;	// x component of momentum of pi+ track
-			Double_t m_truth_piplus_py 	= 0;	// y component of momentum of pi+ track
-			Double_t m_truth_piplus_pz 	= 0;	// z component of momentum of pi+ track
-			Double_t m_truth_piplus_e  	= 0;	// Energy of pi+ track
-			Double_t m_truth_piplus_z0 	= 0;	// z0 of pi+ track 
-			Double_t m_truth_piplus_d0 	= 0;	// d0 of pi+ track
-			Double_t m_truth_piplus_eta	= 0;	// Pseudo rapidity of pi+ track 
-			// Variables of pi- for the TTree
-			Double_t m_truth_piminus_pt	= 0;	// Transverse momentum of pi- track
-			Double_t m_truth_piminus_p 	= 0;	// Momentum magnitude of pi- track
-			Double_t m_truth_piminus_px	= 0;	// x component of momentum of pi- track
-			Double_t m_truth_piminus_py	= 0;	// y component of momentum of pi- track
-			Double_t m_truth_piminus_pz	= 0;	// z component of momentum of pi- track
-			Double_t m_truth_piminus_e 	= 0;	// Energy of pi- track
-			Double_t m_truth_piminus_z0	= 0;	// z0 of pi- track 
-			Double_t m_truth_piminus_d0	= 0;	// d0 of pi- track
-			Double_t m_truth_piminus_eta	= 0;	// Pseudo rapidity of pi- track 
-			// Variables of Ks for the TTree
-			Double_t m_truth_kshort_mass	  = 0;	// Invariant mass of Ks vertex (To be used, the correct one)
-			Double_t m_truth_kshort_invMass = 0;  // Indirect invariant mass calculation of Ks using 4-momenta of tracks constituting its vertex (i.e. pion tracks). NOT to be used
-			Double_t m_truth_kshort_rDV	  = 0;  // r_DV of Ks (distance between primary(0,0,0) and secondary vertices of Ks in xy-plane) 
-			Double_t m_truth_kshort_theta	  = 0;  // Theta calculation with Ks vertex (angle between Ks momentum and beam axis [which in the direction of +ve z axis]) 
-			Double_t m_truth_kshort_eta	  = 0;  // Pseudo rapidity of Ks (calculated using 'Theta')
-			Double_t m_truth_kshort_e	  = 0;  // Energy of Ks (calculated using the info. of Ks mass and momentum)
-			Double_t m_truth_kshort_pt	  = 0;  // Transverse momemntum of Ks (NOT to be used, general addition of the pT of individual tracks)
-			Double_t m_truth_kshort_p	  = 0;  // Momentum magnitude of Ks
-			Double_t m_truth_kshort_px	  = 0;  // x component of momentum of Ks
-			Double_t m_truth_kshort_py	  = 0;  // y component of momentum of Ks
-			Double_t m_truth_kshort_pz	  = 0;  // z component of momentum of Ks
-			Double_t m_truth_kshort_alpha   = 0;	// Alpha calculation with Ks vertex (the angle between r_DV [which is on xy plane] and momentum of Ks) 			
-			Double_t m_truth_kshort_pTCalc  = 0;  // Transverse momentum calculation using px and py of Ks (To be used, the correct one)
-
-
+			
+			Int_t m_truth_piplus_pdgid			= 0;
+			Int_t m_truth_piminus_pdgid			= 0;
+			Int_t m_truth_kshort_pdgid			= 0;
         	public: 
             		Ks( const std::string& name, ISvcLocator* pSvcLocator );
             		virtual ~Ks() = default; 
