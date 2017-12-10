@@ -53,7 +53,7 @@ DDL::Ks::Ks( const std::string& name, ISvcLocator* pSvcLocator ) :
 
 StatusCode DDL::Ks::initialize() 
 { 
-	std::cout << "initialize" << std::endl;
+	std::cout << "Initializing" << std::endl;
 
 	StatusCode sc = service("StoreGateSvc", m_storeGate);
 	if (sc.isFailure())
@@ -122,16 +122,19 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("kshort_pTCalc",&m_kshort_pTCalc,"kshort_pTCalc/D");
 	m_kshort_tree->Branch("kshort_invMass",&m_kshort_invMass,"kshort_invMass/D");
 	m_kshort_tree->Branch("kshort_alpha",&m_kshort_alpha, "kshort_alpha/D");
+
+	// Branches for Truth checking
+	m_kshort_tree->Branch("truth_piplus_pdgid",&m_truth_piplus_pdgid,"truth_piplus_pdgid/I");
+	m_kshort_tree->Branch("truth_piminus_pdgid",&m_truth_piminus_pdgid,"truth_piminus_pdgid/I");
+	m_kshort_tree->Branch("truth_kshort_pdgid",&m_truth_kshort_pdgid,"truth_kshort_pdgid/I");
+
+
 	// Branches for Ks primary vertices, which are stored in a different TTree
 	m_primary_vertices_tree = new TTree("pVtxTree", "pVtxTree");
 	CHECK(histSvc->regTree("/Ks/m_primary_vertices_tree", m_primary_vertices_tree));
 	m_primary_vertices_tree->Branch("primary_vertex_x",&m_primary_vertex_x,"primary_vertex_x/D");
 	m_primary_vertices_tree->Branch("primary_vertex_y",&m_primary_vertex_y,"primary_vertex_y/D");
 	m_primary_vertices_tree->Branch("primary_vertex_z",&m_primary_vertex_z,"primary_vertex_z/D");
-
-	m_kshort_tree->Branch("truth_piplus_pdgid",&m_truth_piplus_pdgid,"truth_piplus_pdgid/I");
-	m_kshort_tree->Branch("truth_piminus_pdgid",&m_truth_piminus_pdgid,"truth_piminus_pdgid/I");
-	m_kshort_tree->Branch("truth_kshort_pdgid",&m_truth_kshort_pdgid,"truth_kshort_pdgid/I");
 
 
 	return StatusCode::SUCCESS;
@@ -140,17 +143,43 @@ StatusCode DDL::Ks::initialize()
 StatusCode DDL::Ks::finalize() 
 {
 
-  //// ATH_MSG_INFO ("Finalizing " << name() << "...");
-  std::cout << "Total number of K Short particles reconstructed: " << m_total_rec_ks << "\n";
-  std::cout << "Out of the reconstructed K Short particles " << total_rec_ks_hits << " were actually true\n";
-  std::cout << "Success rate: " << (double)total_rec_ks_hits / (double)m_total_rec_ks << "\n";
-  return StatusCode::SUCCESS;
+	// ATH_MSG_INFO ("Finalizing " << name() << "...");
+	std::cout << "Finalizing" << std::endl;
+	std::cout << "Total number of K Short particles reconstructed: " << m_total_rec_ks << "\n";
+	std::cout << "Out of the reconstructed K Short particles " << total_rec_ks_hits << " were actually true\n";
+	std::cout << "Success rate: " << (double)total_rec_ks_hits / (double)m_total_rec_ks << "\n";
+  
+	std::cout << "Simulation counter = " << m_sim_counter << ", Data counter = " << m_data_counter << std::endl;
+	return StatusCode::SUCCESS;
 }
 
 StatusCode DDL::Ks::execute() 
 {
 	this->event_counter++;
 	std::cout << "Event Number : " << this->event_counter << std::endl;
+
+	const xAOD::EventInfo* ei_ptr = 0;
+
+  	//evtStore() returns the EventStore of the current event in the event loop. it represents the event.
+    	CHECK(evtStore()->retrieve(ei_ptr,"EventInfo"));
+
+  	//we want to check if the current event is a Data event or a Monte Carlo Simulation event 
+  	if(ei_ptr->eventType(xAOD::EventInfo::IS_SIMULATION))
+  	{
+		std::cout << "Simulation" << std::endl;
+		m_sim_counter++;
+		const xAOD::TruthVertexContainer* truthVertexContainer = nullptr;
+		CHECK(m_storeGate->retrieve(truthVertexContainer, "TruthVertices"));
+		std::cout << "Truth Vertex Container size = " << truthVertexContainer->size() << std::endl;
+
+  	}
+  	else
+  	{
+		std::cout << "Data" << std::endl;
+		m_data_counter++;
+  	} 
+
+
 	StatusCode sc = StatusCode::SUCCESS;  
 	sc = finding_right_ks();
 	if (sc.isFailure())
@@ -158,14 +187,8 @@ StatusCode DDL::Ks::execute()
 		msg(MSG::ERROR) << "Finding right ks failed" << endreq;
 		return StatusCode::SUCCESS;
 	}
-	sc = finding_truth_ks();
-	if (sc.isFailure())
-	{
-		msg(MSG::ERROR) << "Finding truth ks failed" << endreq;
-		return StatusCode::SUCCESS;
-	}
 	return sc;
-  //// ATH_MSG_DEBUG ("Executing " << name() << "...");
+  	// ATH_MSG_DEBUG ("Executing " << name() << "...");
 }
 
 
@@ -185,10 +208,6 @@ StatusCode DDL::Ks::finding_right_ks()
 
 	StatusCode sc = StatusCode::SUCCESS;
 	//----------------------------------------------------------------------------
-	const xAOD::TruthVertexContainer* truthVertexContainer = 0;
-	StatusCode sc2=m_storeGate->retrieve(truthVertexContainer, "TruthVertices");
-
-	int kshort_hits = 0;
 
 	const xAOD::VertexContainer* secondary_vertices = nullptr;
 	const xAOD::VertexContainer* primary_vertices = nullptr;
@@ -229,33 +248,8 @@ StatusCode DDL::Ks::finding_right_ks()
 					// We decide that these pions have originated from k short
 					m_total_rec_ks++;
 					
-					// For MC testing
 					
-					m_truth_piplus_pdgid = -999;
-					m_truth_piminus_pdgid = -999;
-					m_truth_kshort_pdgid = -999;
-					
-					// Get truth particle from pi+
-					const xAOD::TruthParticle *piplus_truth = xAOD::TruthHelpers::getTruthParticle(*piplus_track);
-					const xAOD::TruthParticle *piminus_truth = xAOD::TruthHelpers::getTruthParticle(*piminus_track);
-
-					if (piplus_truth) {
-						m_truth_piplus_pdgid = piplus_truth->pdgId();
-						std::cout << "piplus pdgid is " << m_truth_piplus_pdgid << "\n";
-					}
-					if (piminus_truth) {
-						m_truth_piminus_pdgid = piminus_truth->pdgId();
-						std::cout << "piminus pdgid is " << m_truth_piminus_pdgid << "\n";
-					}
-					if (piplus_truth && piminus_truth) {
-						if (piplus_truth->nParents() == 1) {	
-							const xAOD::TruthParticle *potential_truth_ks = piplus_truth->parent(0);
-							m_truth_kshort_pdgid = potential_truth_ks->pdgId();
-							std::cout << "kshort pdgid is " << m_truth_kshort_pdgid << "\n";
-						}
-					
-					} 
-					
+					//pi+ track info
 					m_piplus_pt   = piplus_track->pt();
 					m_piplus_p    = piplus_track->p4().P();
 					m_piplus_px   = piplus_track->p4().Px();
@@ -293,19 +287,46 @@ StatusCode DDL::Ks::finding_right_ks()
 					rdvDotPt=vertex_ptr->x()*m_kshort_px+vertex_ptr->y()*m_kshort_py;
 					m_kshort_alpha = acos(rdvDotPt/(m_kshort_rDV*m_kshort_pTCalc));
 
-					this->m_kshort_tree->Fill();
+
+					// For MC testing
+					
+					//m_truth_piplus_pdgid = -999;
+					//m_truth_piminus_pdgid = -999;
+					//m_truth_kshort_pdgid = -999;
+					
+					// Get truth particle from pi+ and pi-
+					const xAOD::TruthParticle *piplus_truth = xAOD::TruthHelpers::getTruthParticle(*piplus_track);
+					const xAOD::TruthParticle *piminus_truth = xAOD::TruthHelpers::getTruthParticle(*piminus_track);
+
+					if(piplus_truth && piminus_truth)
+					{
+						m_truth_piplus_pdgid = piplus_truth->pdgId();
+						//std::cout << "piplus pdgid is " << m_truth_piplus_pdgid << "\n";
+
+						m_truth_piminus_pdgid = piminus_truth->pdgId();
+						//std::cout << "piminus pdgid is " << m_truth_piminus_pdgid << "\n";
+
+						if (piplus_truth->nParents() == 1 && piminus_truth->nParents() == 1) 
+						{
+							if (piplus_truth->parent(0) == piminus_truth->parent(0)) 
+							{
+								const xAOD::TruthParticle *potential_truth_ks = piplus_truth->parent(0);
+								m_truth_kshort_pdgid = potential_truth_ks->pdgId();
+								//std::cout << "kshort pdgid is " << m_truth_kshort_pdgid << "\n";
+
+								if(m_truth_kshort_pdgid == m_KS_PDG)
+								{
+									total_rec_ks_hits++;								}
+
+							}	
+						}
+
+						this->m_kshort_tree->Fill();
+					}
 				}
 			}
 		}
 	}	
-	
-	return sc;	
-}
-
-StatusCode DDL::Ks::finding_truth_ks()
-{
-
-	StatusCode sc = StatusCode::SUCCESS;
 	
 	return sc;	
 }
