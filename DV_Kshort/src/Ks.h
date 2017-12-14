@@ -40,7 +40,7 @@ namespace DDL
 			int event_counter		= 0;
 
 			TTree* m_kshort_tree 		= nullptr;
-			TTree* m_primary_vertices_tree 	= nullptr;
+			//TTree* m_primary_vertices_tree 	= nullptr;
 
 			//TTree* m_truth_kshort_tree 	= nullptr;
 
@@ -91,16 +91,33 @@ namespace DDL
 			Double_t m_kshort_pz	  	= 0;  	// z component of momentum of Ks
 			Double_t m_kshort_alpha   	= 0;	// Alpha calculation with Ks vertex (the angle between r_DV [which is on xy plane] and momentum of Ks) 			
 			Double_t m_kshort_pTCalc  	= 0;  	// Transverse momentum calculation using px and py of Ks (To be used, the correct one)
- 			// Variables related to primary vertices, stored in a different TTree
+ 			// Variables related to primary vertices
 			Double_t m_primary_vertex_x 	= 0;	// x position of Ks primary vertex (from Primary vertex container, which has different size from the secondary one)
 			Double_t m_primary_vertex_y 	= 0;	// y position of Ks primary vertex (from Primary vertex container, which has different size from the secondary one)
 			Double_t m_primary_vertex_z 	= 0;	// z position of Ks primary vertex (from Primary vertex container, which has different size from the secondary one)
 
 
-			 // Variables related to Truth checking
+			// Variables related to Truth checking
 			Int_t m_truth_piplus_pdgid	= 0;
 			Int_t m_truth_piminus_pdgid	= 0;
 			Int_t m_truth_kshort_pdgid	= 0;
+
+
+			// Variables related to error matrix
+                   
+                    	Double_t  m_covariance00;
+                    	Double_t  m_covariance01;
+                    	Double_t  m_covariance02;
+                    	Double_t  m_covariance10;
+                    	Double_t  m_covariance11;
+                    	Double_t  m_covariance12;
+                    	Double_t  m_covariance20;
+                    	Double_t  m_covariance21;
+                    	Double_t  m_covariance22;
+
+
+
+
         	public: 
             		Ks( const std::string& name, ISvcLocator* pSvcLocator );
             		virtual ~Ks() = default; 
