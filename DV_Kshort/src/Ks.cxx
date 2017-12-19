@@ -1,6 +1,5 @@
 // DDLStudies includes
 #include "Ks.h"
-#include "xAODTruth/xAODTruthHelpers.h"
 
 // framework includes
 #include "GaudiKernel/ServiceHandle.h"
@@ -21,7 +20,7 @@
 #include "xAODTruth/TruthParticle.h"
 #include "xAODTruth/TruthVertex.h"
 #include "xAODTruth/TruthVertexContainer.h"
-//#include "xAODTruth/xAODTruthHelpers.h"
+#include "xAODTruth/xAODTruthHelpers.h"
 
 
 //ROOT
@@ -109,33 +108,32 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("piminus_d0",  &m_piminus_d0,  "piminus_d0/D" );
 	m_kshort_tree->Branch("piminus_eta", &m_piminus_eta, "piminus_eta/D");
 	// Branches for Ks
-	m_kshort_tree->Branch("kshort_mass", &m_kshort_mass, "kshort_mass/D");
-	m_kshort_tree->Branch("kshort_rDV",  &m_kshort_rDV,  "kshort_rDV/D" );
-	m_kshort_tree->Branch("kshort_theta",&m_kshort_theta,  "kshort_theta/D" );
-	m_kshort_tree->Branch("kshort_eta",  &m_kshort_eta,  "kshort_eta/D" );
-	m_kshort_tree->Branch("kshort_e",    &m_kshort_e,    "kshort_e/D"   );
-	m_kshort_tree->Branch("kshort_pt",   &m_kshort_pt,   "kshort_pt/D"  );
-	m_kshort_tree->Branch("kshort_p",    &m_kshort_p,    "kshort_p/D"   );
-	m_kshort_tree->Branch("kshort_px",   &m_kshort_px,   "kshort_px/D"  );
-	m_kshort_tree->Branch("kshort_py",   &m_kshort_py,   "kshort_py/D"  );
-	m_kshort_tree->Branch("kshort_pz",   &m_kshort_pz,   "kshort_pz/D"  );
-	m_kshort_tree->Branch("kshort_pTCalc",&m_kshort_pTCalc,"kshort_pTCalc/D");
+	m_kshort_tree->Branch("kshort_mass",   &m_kshort_mass,   "kshort_mass/D"   );
+	m_kshort_tree->Branch("kshort_rDV",    &m_kshort_rDV,    "kshort_rDV/D"    );
+	m_kshort_tree->Branch("kshort_theta",  &m_kshort_theta,  "kshort_theta/D"  );
+	m_kshort_tree->Branch("kshort_eta",    &m_kshort_eta,    "kshort_eta/D"    );
+	m_kshort_tree->Branch("kshort_e",      &m_kshort_e,      "kshort_e/D"      );
+	m_kshort_tree->Branch("kshort_pt",     &m_kshort_pt,     "kshort_pt/D"     );
+	m_kshort_tree->Branch("kshort_p",      &m_kshort_p,      "kshort_p/D"      );
+	m_kshort_tree->Branch("kshort_px",     &m_kshort_px,     "kshort_px/D"     );
+	m_kshort_tree->Branch("kshort_py",     &m_kshort_py,     "kshort_py/D"     );
+	m_kshort_tree->Branch("kshort_pz",     &m_kshort_pz,     "kshort_pz/D"     );
+        m_kshort_tree->Branch("kshort_x",      &m_kshort_x,      "kshort_x/D"      );
+	m_kshort_tree->Branch("kshort_y",      &m_kshort_y,      "kshort_y/D"      );
+	m_kshort_tree->Branch("kshort_z",      &m_kshort_z,      "kshort_z/D"      );
+	m_kshort_tree->Branch("kshort_pTCalc", &m_kshort_pTCalc, "kshort_pTCalc/D" );
 	m_kshort_tree->Branch("kshort_invMass",&m_kshort_invMass,"kshort_invMass/D");
-	m_kshort_tree->Branch("kshort_alpha",&m_kshort_alpha, "kshort_alpha/D");
-
-	//m_primary_vertices_tree = new TTree("pVtxTree", "pVtxTree");
-	//CHECK(histSvc->regTree("/Ks/m_primary_vertices_tree", m_primary_vertices_tree));
-	m_kshort_tree->Branch("primary_vertex_x",&m_primary_vertex_x,"primary_vertex_x/D");
-	m_kshort_tree->Branch("primary_vertex_y",&m_primary_vertex_y,"primary_vertex_y/D");
-	m_kshort_tree->Branch("primary_vertex_z",&m_primary_vertex_z,"primary_vertex_z/D");
+	m_kshort_tree->Branch("kshort_alpha",  &m_kshort_alpha,  "kshort_alpha/D"  );
+	// Brnaches for primary vertex
+	m_kshort_tree->Branch("primary_vertex_x", &m_primary_vertex_x, "primary_vertex_x/D" );
+	m_kshort_tree->Branch("primary_vertex_y", &m_primary_vertex_y, "primary_vertex_y/D" );
+	m_kshort_tree->Branch("primary_vertex_z", &m_primary_vertex_z, "primary_vertex_z/D" );
 	m_kshort_tree->Branch("primary_vertex_pt",&m_primary_vertex_pt,"primary_vertex_pt/D");
-
 	// Branches for Truth checking
-	m_kshort_tree->Branch("truth_piplus_pdgid",&m_truth_piplus_pdgid,"truth_piplus_pdgid/I");
+	m_kshort_tree->Branch("truth_piplus_pdgid", &m_truth_piplus_pdgid, "truth_piplus_pdgid/I" );
 	m_kshort_tree->Branch("truth_piminus_pdgid",&m_truth_piminus_pdgid,"truth_piminus_pdgid/I");
-	m_kshort_tree->Branch("truth_kshort_pdgid",&m_truth_kshort_pdgid,"truth_kshort_pdgid/I");
-
-	//Branches for error matrix
+	m_kshort_tree->Branch("truth_kshort_pdgid", &m_truth_kshort_pdgid, "truth_kshort_pdgid/I" );
+	//Branches for error matrix related to Ks vertices
 	m_kshort_tree->Branch("covariance00", &m_covariance00, "covariance00/D");
 	m_kshort_tree->Branch("covariance01", &m_covariance01, "covariance01/D");
 	m_kshort_tree->Branch("covariance02", &m_covariance02, "covariance02/D");
@@ -145,6 +143,8 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("covariance20", &m_covariance20, "covariance20/D");
 	m_kshort_tree->Branch("covariance21", &m_covariance21, "covariance21/D");
 	m_kshort_tree->Branch("covariance22", &m_covariance22, "covariance22/D");
+	// Related to both Ks and primary vertices 
+	m_kshort_tree->Branch("z_sv_pv",&m_z_sv_pv,"z_sv_pv/D");
 
 
 	return StatusCode::SUCCESS;
@@ -154,19 +154,18 @@ StatusCode DDL::Ks::finalize()
 {
 
 	// ATH_MSG_INFO ("Finalizing " << name() << "...");
-	std::cout << "Finalizing" << std::endl;
 	std::cout << "Total number of K Short particles reconstructed: " << m_total_rec_ks << "\n";
-	std::cout << "Out of the reconstructed K Short particles " << total_rec_ks_hits << " were actually true\n";
-	std::cout << "Success rate: " << (double)total_rec_ks_hits / (double)m_total_rec_ks << "\n";
-  
+	std::cout << "Out of the reconstructed K Short particles " << m_total_rec_ks_hits << " were actually true\n";
+	std::cout << "Success rate: " << (double)m_total_rec_ks_hits / (double)m_total_rec_ks << "\n";
+  	// To be done properly?
 	std::cout << "Simulation counter = " << m_sim_counter << ", Data counter = " << m_data_counter << std::endl;
 	return StatusCode::SUCCESS;
 }
 
 StatusCode DDL::Ks::execute() 
 {
-	this->event_counter++;
-	std::cout << "Event Number : " << this->event_counter << std::endl;
+	this->m_event_counter++;
+	std::cout << "Event Number : " << this->m_event_counter << std::endl;
 
 	const xAOD::EventInfo* ei_ptr = 0;
 
@@ -232,58 +231,20 @@ StatusCode DDL::Ks::finding_right_ks()
 	TLorentzVector p4_sum;
 	Double_t rdvDotPt;
 
-	//Get the position of the most energetic primary vertex
-	
+	// Pointer for the first primary vertex from the primary vertices container
 	const xAOD::Vertex* most_energetic_vertex = nullptr;
-	//Double_t most_energetic_pt;
-	//Double_t vertex_px;
-	//Double_t vertex_py;
-	//Double_t vertex_pt;
-	m_primary_vertex_x = -1;
-	m_primary_vertex_y = -1;
-	m_primary_vertex_z = -1;
-	m_primary_vertex_pt = -1;
 	
 	if(primary_vertices->size()>0)
-	{
+	{	
+		// The first vertex from the primary vertex container which also happens to be the most energetic one, hence the name
 		most_energetic_vertex = (*primary_vertices)[0];
-		/*
-		vertex_px = most_energetic_vertex ->auxdataConst<float>("vtx_px");
-		vertex_py = most_energetic_vertex ->auxdataConst<float>("vtx_py");
-		most_energetic_pt = sqrt(pow(vertex_px ,2) + pow(vertex_py ,2));
-		for(xAOD::Vertex* vertex_ptr : *primary_vertices )
-		{
-			vertex_px = vertex_ptr->auxdataConst<float>("vtx_px");
-			vertex_py = vertex_ptr->auxdataConst<float>("vtx_py");
-			vertex_pt = sqrt(pow(vertex_px ,2) + pow(vertex_py ,2));
-			if(vertex_pt > most_energetic_pt)
-			{
-				most_energetic_vertex = vertex_ptr;
-				most_energetic_pt = vertex_pt;
-			}
-		}
-		*/
 		
-		
+		// Position coordinates of the first primary vertex
 		m_primary_vertex_x = most_energetic_vertex ->x();
 		m_primary_vertex_y = most_energetic_vertex ->y();
 		m_primary_vertex_z = most_energetic_vertex ->z();
 		
-		m_primary_vertex_pt = 0;
-		
-		// Get all the containers of all track particles associated with the vertex
-		/*
-		auto vtx_particles_links = most_energetic_vertex->trackParticleLinks();
-		
-		// Now loop over all containers
-		for ( auto particle_container : vtx_particles_links) {
-			// Now loop over all particles in the container
-			for (xAOD::TrackParticle *particle : *particle_container) {
-				m_primary_vertex_pt += particle->pt();
-			}
-		}
-		*/
-		
+		// Looping over all the tracks of the first primary vertex
 		size_t i;
 		for (i = 0; i < most_energetic_vertex->nTrackParticles(); i++) {
 			m_primary_vertex_pt += most_energetic_vertex->trackParticle(i)->pt();
@@ -313,7 +274,7 @@ StatusCode DDL::Ks::finding_right_ks()
 				if (piplus_track->charge() + piminus_track->charge() == 0 && piplus_track->charge() == 1)
 				{
 					
-					// We decide that these pions have originated from k short
+					// We decide that these pions have originated from Ks
 					m_total_rec_ks++;
 					
 					
@@ -357,10 +318,10 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_kshort_x = vertex_ptr->x();
 					m_kshort_y = vertex_ptr->y();
 					m_kshort_z = vertex_ptr->z();
-					m_z_sv_pv = abs( m_kshort_z - ( (rdvDotPt + m_kshort_pz) / (m_kshort_pt)) - m_primary_vertex_z );
+					// Related to both Ks and primary vertices
+					m_z_sv_pv = abs( m_kshort_z - ( (m_kshort_rDV * m_kshort_pz) / (m_kshort_pTCalc)) - m_primary_vertex_z );
 
-					// For MC testing
-										
+					// For MC Truth				
 					// Get truth particle from pi+ and pi-
 					const xAOD::TruthParticle *piplus_truth = xAOD::TruthHelpers::getTruthParticle(*piplus_track);
 					const xAOD::TruthParticle *piminus_truth = xAOD::TruthHelpers::getTruthParticle(*piminus_track);
@@ -383,14 +344,13 @@ StatusCode DDL::Ks::finding_right_ks()
 
 								if(m_truth_kshort_pdgid == m_KS_PDG)
 								{
-									total_rec_ks_hits++;								}
+									m_total_rec_ks_hits++;								}
 
 							}	
 						}
 					}
 
-					//For error matrix
-
+					// Elements of the 3x3 error matrix related to Ks vertices
                     			AmgSymMatrix(3) covariance_matrix = vertex_ptr->covariancePosition();
                     			m_covariance00 = covariance_matrix(0,0);
                     			m_covariance01 = covariance_matrix(0,1);
