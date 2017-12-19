@@ -128,6 +128,7 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("primary_vertex_x",&m_primary_vertex_x,"primary_vertex_x/D");
 	m_kshort_tree->Branch("primary_vertex_y",&m_primary_vertex_y,"primary_vertex_y/D");
 	m_kshort_tree->Branch("primary_vertex_z",&m_primary_vertex_z,"primary_vertex_z/D");
+	m_kshort_tree->Branch("primary_vertex_pt",&m_primary_vertex_pt,"primary_vertex_pt/D");
 
 	// Branches for Truth checking
 	m_kshort_tree->Branch("truth_piplus_pdgid",&m_truth_piplus_pdgid,"truth_piplus_pdgid/I");
@@ -241,6 +242,8 @@ StatusCode DDL::Ks::finding_right_ks()
 	m_primary_vertex_x = -1;
 	m_primary_vertex_y = -1;
 	m_primary_vertex_z = -1;
+	m_primary_vertex_pt = -1;
+	
 	if(primary_vertices->size()>0)
 	{
 		most_energetic_vertex = (*primary_vertices)[0];
@@ -260,9 +263,31 @@ StatusCode DDL::Ks::finding_right_ks()
 			}
 		}
 		*/
+		
+		
 		m_primary_vertex_x = most_energetic_vertex ->x();
 		m_primary_vertex_y = most_energetic_vertex ->y();
 		m_primary_vertex_z = most_energetic_vertex ->z();
+		
+		m_primary_vertex_pt = 0;
+		
+		// Get all the containers of all track particles associated with the vertex
+		/*
+		auto vtx_particles_links = most_energetic_vertex->trackParticleLinks();
+		
+		// Now loop over all containers
+		for ( auto particle_container : vtx_particles_links) {
+			// Now loop over all particles in the container
+			for (xAOD::TrackParticle *particle : *particle_container) {
+				m_primary_vertex_pt += particle->pt();
+			}
+		}
+		*/
+		
+		size_t i;
+		for (i = 0; i < most_energetic_vertex->nTrackParticles(); i++) {
+			m_primary_vertex_pt += most_energetic_vertex->trackParticle(i)->pt();
+		}
 	}
 
 
@@ -329,7 +354,10 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_kshort_eta=log(1.0/(tan(m_kshort_theta/2)));
 					rdvDotPt=vertex_ptr->x()*m_kshort_px+vertex_ptr->y()*m_kshort_py;
 					m_kshort_alpha = acos(rdvDotPt/(m_kshort_rDV*m_kshort_pTCalc));
-
+					m_kshort_x = vertex_ptr->x();
+					m_kshort_y = vertex_ptr->y();
+					m_kshort_z = vertex_ptr->z();
+					m_z_sv_pv = abs( m_kshort_z - ( (rdvDotPt + m_kshort_pz) / (m_kshort_pt)) - m_primary_vertex_z );
 
 					// For MC testing
 										

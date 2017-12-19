@@ -89,14 +89,21 @@ namespace DDL
 			Double_t m_kshort_px	  	= 0;  	// x component of momentum of Ks
 			Double_t m_kshort_py	  	= 0;  	// y component of momentum of Ks
 			Double_t m_kshort_pz	  	= 0;  	// z component of momentum of Ks
+			Double_t m_kshort_x	  	= 0;  	// x component of momentum of Ks
+			Double_t m_kshort_y	  	= 0;  	// y component of momentum of Ks
+			Double_t m_kshort_z	  	= 0;  	// z component of momentum of Ks
 			Double_t m_kshort_alpha   	= 0;	// Alpha calculation with Ks vertex (the angle between r_DV [which is on xy plane] and momentum of Ks) 			
 			Double_t m_kshort_pTCalc  	= 0;  	// Transverse momentum calculation using px and py of Ks (To be used, the correct one)
- 			// Variables related to primary vertices
+ 			Double_t m_z_sv_pv			= 0;	// The distance between the z of the first primary vertex, and the extrapolation of the momentum of the secondary vertex
+			
+			// Variables related to primary vertices
 			Double_t m_primary_vertex_x 	= 0;	// x position of Ks primary vertex (from Primary vertex container, which has different size from the secondary one)
 			Double_t m_primary_vertex_y 	= 0;	// y position of Ks primary vertex (from Primary vertex container, which has different size from the secondary one)
 			Double_t m_primary_vertex_z 	= 0;	// z position of Ks primary vertex (from Primary vertex container, which has different size from the secondary one)
-
-
+			
+			
+			Double_t m_primary_vertex_pt	= 0;    // Pt of the primary vertex - the sum of the Pt of all its associated particles 
+			
 			// Variables related to Truth checking
 			Int_t m_truth_piplus_pdgid	= 0;
 			Int_t m_truth_piminus_pdgid	= 0;
