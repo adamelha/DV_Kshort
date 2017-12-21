@@ -187,7 +187,7 @@ StatusCode DDL::Ks::execute()
   	//evtStore() returns the EventStore of the current event in the event loop. it represents the event.
     	CHECK(evtStore()->retrieve(ei_ptr,"EventInfo"));
   	//we want to check if the current event is a Data event or a Monte Carlo Simulation event 
-  	if(ei_ptr->eventType(xAOD::EventInfo::IS_SIMULATION))
+  	if(ei_ptr && ei_ptr->eventType(xAOD::EventInfo::IS_SIMULATION))
   	{
 		std::cout << "Simulation" << std::endl;
 		m_sim_counter++;
@@ -327,13 +327,14 @@ StatusCode DDL::Ks::finding_right_ks()
 	// Defining the iterator in a short and efficient way
 	for (xAOD::Vertex* vertex_ptr : *secondary_vertices )
 	{
+		std::cout << "vtx_ptr " << vertex_ptr << "\n";
 		// Vertices with only two tracks 
 		if (vertex_ptr->nTrackParticles() == 2)
 		{
 			// K short pidType is 310, (or PDG::pidType::K_S0)
 			piplus_track = vertex_ptr->trackParticle(0);
 			piminus_track = vertex_ptr->trackParticle(1);
-
+			std::cout << "got 2 tracks\n";
 			if (piplus_track->charge() < piminus_track->charge()) //in case track#0 is pi- and track#1 is pi+
 			{
 				std::swap(piminus_track, piplus_track);
@@ -341,10 +342,11 @@ StatusCode DDL::Ks::finding_right_ks()
 			// Checking whether the masses are equal to the charged pion mass or not
 			if (isPi(piplus_track->m()) && isPi(piminus_track->m()))
 			{
+				std::cout << "is pi\n ";
 				// Checking if the tracks have charges of -1 and +1
 				if (piplus_track->charge() + piminus_track->charge() == 0 && piplus_track->charge() == 1)
 				{
-					
+					std::cout << "start storing \n";
 					// We decide that these pions have originated from Ks
 					m_total_rec_ks++;
 					
@@ -384,16 +386,16 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_kshort_p  = sqrt(pow(m_kshort_px,2) + pow(m_kshort_py,2) + pow(m_kshort_pz,2));
 					m_kshort_theta=acos(m_kshort_pz/m_kshort_p);
 					m_kshort_eta=log(1.0/(tan(m_kshort_theta/2)));
-					rdvDotPt=vertex_ptr->x()*m_kshort_px+vertex_ptr->y()*m_kshort_py;
-					m_kshort_alpha = acos(rdvDotPt/(m_kshort_rDV*m_kshort_pTCalc));
+					rdvDotPt=vertex_ptr->x() * m_kshort_px + vertex_ptr->y() * m_kshort_py;
+					m_kshort_alpha = acos(rdvDotPt/(m_kshort_rDV * m_kshort_pTCalc));
 					m_kshort_x = vertex_ptr->x();
 					m_kshort_y = vertex_ptr->y();
 					m_kshort_z = vertex_ptr->z();
 
 					// Related to both Ks and primary vertices
 					m_z_sv_pv = ( m_kshort_z - ( (m_kshort_rDV * m_kshort_pz) / (m_kshort_pTCalc)) - m_primary_vertex_0z );
-
-
+					
+					std::cout << "finished up to truth \n";
 
 					//init the truth vars
 					m_truth_piplus_pdgid = -999;
@@ -402,7 +404,7 @@ StatusCode DDL::Ks::finding_right_ks()
 
 					const xAOD::EventInfo* ei_ptr = 0;
     					CHECK(evtStore()->retrieve(ei_ptr,"EventInfo"));
-					if(ei_ptr->eventType(xAOD::EventInfo::IS_SIMULATION))
+					if(ei_ptr && ei_ptr->eventType(xAOD::EventInfo::IS_SIMULATION))
   					{
 
 						// For MC Truth				
@@ -430,22 +432,48 @@ StatusCode DDL::Ks::finding_right_ks()
 							}
 						}
 					}
-
+					
+									m_covariance01 = -999;
+									m_covariance02 = -999;
+									m_covariance10 = -999;
+									m_covariance11 = -999;
+									m_covariance12 = -999;
+									m_covariance20 = -999;
+									m_covariance21 = -999;
+									m_covariance22 = -999;
 					// Elements of the 3x3 error matrix related to Ks vertices
-                    			AmgSymMatrix(3) covariance_matrix = vertex_ptr->covariancePosition();
-                    			m_covariance00 = covariance_matrix(0,0);
-                    			m_covariance01 = covariance_matrix(0,1);
-                    			m_covariance02 = covariance_matrix(0,2);
-                    			m_covariance10 = covariance_matrix(1,0);
-                    			m_covariance11 = covariance_matrix(1,1);
-                    			m_covariance12 = covariance_matrix(1,2);
-                    			m_covariance20 = covariance_matrix(2,0);
-                    			m_covariance21 = covariance_matrix(2,1);
-                    			m_covariance22 = covariance_matrix(2,2);
-					m_sr_covariance00 = sqrt(covariance_matrix(0,0));
-					m_sr_covariance11 = sqrt(covariance_matrix(1,1));
-					m_sr_covariance22 = sqrt(covariance_matrix(2,2));
-
+					std::cout << "start getting matrices \n";
+								try{
+									
+                    			auto covariance_matrix = vertex_ptr->covariance();
+								std::cout << "size of vector is " << covariance_matrix.size() << "\n";
+								if(covariance_matrix.size() != 0) {
+								std::cout << ">covariancePosition success \n";
+									m_covariance00 = covariance_matrix[0];
+									std::cout << "mat00 success \n";
+									
+									m_covariance01 = covariance_matrix[1];
+									std::cout << "mat01 success \n";
+									m_covariance02 = covariance_matrix[2];
+									std::cout << "mat02 success \n";
+									m_covariance10 = covariance_matrix[3];
+									std::cout << "mat10 success \n";
+									m_covariance11 = covariance_matrix[4];
+									std::cout << "mat11 success \n";
+									m_covariance12 = covariance_matrix[5];
+									std::cout << "mat12 success \n";
+									m_covariance20 = covariance_matrix[6];
+									std::cout << "mat20 success \n";
+									m_covariance21 = covariance_matrix[7];
+									std::cout << "mat21 success \n";
+									m_covariance22 = covariance_matrix[8];
+					m_sr_covariance00 = sqrt(covariance_matrix[0]);
+					m_sr_covariance11 = sqrt(covariance_matrix[4]);
+					m_sr_covariance22 = sqrt(covariance_matrix[8]);
+								}
+							} catch (...) {
+    // ...
+							}
 					this->m_kshort_tree->Fill();
 
 				}
