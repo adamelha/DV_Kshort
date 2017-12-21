@@ -13,7 +13,8 @@ from AthenaCommon.AthenaCommonFlags import athenaCommonFlags as acf
 from glob import glob
 #acf.FilesInput = []
 acf.FilesInput = ["/afs/cern.ch/work/j/jbiswal/public/DAOD_RPVLL.11691312._000011.pool.root.1"]
-#acf.FilesInput  = ["/afs/cern.ch/user/j/jbiswal/work/public/data16_13TeV/DAOD_RPVLL.10626848._038197.pool.root.1"]
+#acf.FilesInput  = ["/afs/cern.ch/work/j/jbiswal/public/data16_13TeV/DAOD_RPVLL.10626848._038197.pool.root.1"]
+
 # Config rec
 from RecExConfig.RecFlags import rec
 rec.OutputLevel = WARNING

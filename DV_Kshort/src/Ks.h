@@ -109,7 +109,8 @@ namespace DDL
 			Double_t m_primary_vertex_y 	= 0;	// y position of Ks primary vertex (from Primary vertex container, which has different size from the secondary one)
 			Double_t m_primary_vertex_z 	= 0;	// z position of Ks primary vertex (from Primary vertex container, which has different size from the secondary one)
 			Double_t m_primary_vertex_pt	= 0;    // Transverse momentum of the first primary vertex in every event == sum of transverse momenta of all its tracks 
-			
+			Int_t m_most_energetic_primary_vertex_index  = 0;			
+
 			// Variables related to Truth checking
 			Int_t m_truth_piplus_pdgid	= 0; // PDG id of pi+ (If TRUE, the numerical value should be equal to 211)
 			Int_t m_truth_piminus_pdgid	= 0; // PDG id of pi- (If TRUE, the numerical value should be equal to -211)
@@ -128,7 +129,10 @@ namespace DDL
 			bool isPi(float piMass);
 			// Finding right Ks w/ the Truth information
 			StatusCode finding_right_ks();
-			
+			Int_t get_most_energetic_vertex_index(const xAOD::VertexContainer* vertices);
+			Double_t get_sum_pt(const xAOD::Vertex* vertex_ptr);
+
+
 
 	};
 

@@ -129,6 +129,7 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("primary_vertex_y", &m_primary_vertex_y, "primary_vertex_y/D" );
 	m_kshort_tree->Branch("primary_vertex_z", &m_primary_vertex_z, "primary_vertex_z/D" );
 	m_kshort_tree->Branch("primary_vertex_pt",&m_primary_vertex_pt,"primary_vertex_pt/D");
+	m_kshort_tree->Branch("most_energetic_primary_vertex_index",&m_most_energetic_primary_vertex_index , "most_energetic_primary_vertex_index/I"); 
 	// Branches for Truth checking
 	m_kshort_tree->Branch("truth_piplus_pdgid", &m_truth_piplus_pdgid, "truth_piplus_pdgid/I" );
 	m_kshort_tree->Branch("truth_piminus_pdgid",&m_truth_piminus_pdgid,"truth_piminus_pdgid/I");
@@ -154,10 +155,16 @@ StatusCode DDL::Ks::finalize()
 {
 
 	// ATH_MSG_INFO ("Finalizing " << name() << "...");
+
 	std::cout << "Total number of K Short particles reconstructed: " << m_total_rec_ks << "\n";
-	std::cout << "Out of the reconstructed K Short particles " << m_total_rec_ks_hits << " were actually true\n";
-	std::cout << "Success rate: " << (double)m_total_rec_ks_hits / (double)m_total_rec_ks << "\n";
-  	// To be done properly?
+	if(m_sim_counter>0)
+	{
+		std::cout << "Out of the reconstructed K Short particles " << m_total_rec_ks_hits << " were actually true\n";
+		if(m_total_rec_ks>0)
+		{
+			std::cout << "Success rate: " << (double)m_total_rec_ks_hits / (double)m_total_rec_ks << "\n";
+		}
+  	}
 	std::cout << "Simulation counter = " << m_sim_counter << ", Data counter = " << m_data_counter << std::endl;
 	return StatusCode::SUCCESS;
 }
@@ -168,10 +175,8 @@ StatusCode DDL::Ks::execute()
 	std::cout << "Event Number : " << this->m_event_counter << std::endl;
 
 	const xAOD::EventInfo* ei_ptr = 0;
-
   	//evtStore() returns the EventStore of the current event in the event loop. it represents the event.
     	CHECK(evtStore()->retrieve(ei_ptr,"EventInfo"));
-
   	//we want to check if the current event is a Data event or a Monte Carlo Simulation event 
   	if(ei_ptr->eventType(xAOD::EventInfo::IS_SIMULATION))
   	{
@@ -210,6 +215,45 @@ bool DDL::Ks::isPi(float piMass)
         return ( (piMass >= (actual_pi_mass - margin_of_error)) &&  (piMass <= (actual_pi_mass + margin_of_error)) );
 }
 
+Int_t DDL::Ks::get_most_energetic_vertex_index(const xAOD::VertexContainer* vertices)
+{
+	
+	size_t max_vertex_index=0, i, num_of_vertices;
+	Double_t max_vertex_pt;
+	Double_t current_vertex_pt;
+
+	if(vertices != nullptr && vertices->size()>0)
+	{
+		num_of_vertices = vertices->size();
+		max_vertex_pt = get_sum_pt((*vertices)[0]);
+		for(i=1; i<num_of_vertices; i++ )
+		{
+			current_vertex_pt = get_sum_pt((*vertices)[i]);
+			if(current_vertex_pt > max_vertex_pt)
+			{
+				max_vertex_pt = current_vertex_pt;
+				max_vertex_index = i;
+			}
+		}
+	}
+	return max_vertex_index;
+	
+}
+
+Double_t DDL::Ks::get_sum_pt(const xAOD::Vertex* vertex_ptr)
+{
+	Double_t sum_pt = 0;
+	size_t i, num_of_tracks;
+	if(vertex_ptr != nullptr)
+	{
+		num_of_tracks = vertex_ptr->nTrackParticles();
+		for (i = 0; i < num_of_tracks; i++) 
+		{
+			sum_pt += vertex_ptr->trackParticle(i)->pt();
+		}
+	}
+	return sum_pt;	
+}
 
 
 StatusCode DDL::Ks::finding_right_ks()
@@ -230,25 +274,31 @@ StatusCode DDL::Ks::finding_right_ks()
 
 	TLorentzVector p4_sum;
 	Double_t rdvDotPt;
+	Double_t avg_num_of_tracks = 0;
 
 	// Pointer for the first primary vertex from the primary vertices container
 	const xAOD::Vertex* most_energetic_vertex = nullptr;
 	
 	if(primary_vertices->size()>0)
 	{	
-		// The first vertex from the primary vertex container which also happens to be the most energetic one, hence the name
-		most_energetic_vertex = (*primary_vertices)[0];
+		
+		m_most_energetic_primary_vertex_index = get_most_energetic_vertex_index(primary_vertices);
+		most_energetic_vertex = (*primary_vertices)[m_most_energetic_primary_vertex_index];
+
 		
 		// Position coordinates of the first primary vertex
 		m_primary_vertex_x = most_energetic_vertex ->x();
 		m_primary_vertex_y = most_energetic_vertex ->y();
 		m_primary_vertex_z = most_energetic_vertex ->z();
 		
-		// Looping over all the tracks of the first primary vertex
-		size_t i;
-		for (i = 0; i < most_energetic_vertex->nTrackParticles(); i++) {
-			m_primary_vertex_pt += most_energetic_vertex->trackParticle(i)->pt();
+		m_primary_vertex_pt = get_sum_pt(most_energetic_vertex);
+		
+		for(const xAOD::Vertex* vertex_ptr : *primary_vertices)
+		{
+			avg_num_of_tracks += vertex_ptr->nTrackParticles();
 		}
+		avg_num_of_tracks = avg_num_of_tracks/(primary_vertices->size());
+		std::cout << "Average tracks number for primary vertices : " << avg_num_of_tracks << std::endl;
 	}
 
 
@@ -318,35 +368,45 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_kshort_x = vertex_ptr->x();
 					m_kshort_y = vertex_ptr->y();
 					m_kshort_z = vertex_ptr->z();
+
 					// Related to both Ks and primary vertices
 					m_z_sv_pv = abs( m_kshort_z - ( (m_kshort_rDV * m_kshort_pz) / (m_kshort_pTCalc)) - m_primary_vertex_z );
 
-					// For MC Truth				
-					// Get truth particle from pi+ and pi-
-					const xAOD::TruthParticle *piplus_truth = xAOD::TruthHelpers::getTruthParticle(*piplus_track);
-					const xAOD::TruthParticle *piminus_truth = xAOD::TruthHelpers::getTruthParticle(*piminus_track);
 
-					if(piplus_truth && piminus_truth)
-					{
-						m_truth_piplus_pdgid = piplus_truth->pdgId();
-						//std::cout << "piplus pdgid is " << m_truth_piplus_pdgid << "\n";
 
-						m_truth_piminus_pdgid = piminus_truth->pdgId();
-						//std::cout << "piminus pdgid is " << m_truth_piminus_pdgid << "\n";
+					//init the truth vars
+					m_truth_piplus_pdgid = -999;
+					m_truth_piminus_pdgid = -999;
+					m_truth_kshort_pdgid = -999;
 
-						if (piplus_truth->nParents() == 1 && piminus_truth->nParents() == 1) 
+					const xAOD::EventInfo* ei_ptr = 0;
+    					CHECK(evtStore()->retrieve(ei_ptr,"EventInfo"));
+					if(ei_ptr->eventType(xAOD::EventInfo::IS_SIMULATION))
+  					{
+
+						// For MC Truth				
+						// Get truth particle from pi+ and pi-
+						const xAOD::TruthParticle *piplus_truth = xAOD::TruthHelpers::getTruthParticle(*piplus_track);
+						const xAOD::TruthParticle *piminus_truth = xAOD::TruthHelpers::getTruthParticle(*piminus_track);
+	
+						if(piplus_truth && piminus_truth)
 						{
-							if (piplus_truth->parent(0) == piminus_truth->parent(0)) 
+							m_truth_piplus_pdgid = piplus_truth->pdgId();	
+							m_truth_piminus_pdgid = piminus_truth->pdgId();
+	
+							if (piplus_truth->nParents() == 1 && piminus_truth->nParents() == 1) 
 							{
-								const xAOD::TruthParticle *potential_truth_ks = piplus_truth->parent(0);
-								m_truth_kshort_pdgid = potential_truth_ks->pdgId();
-								//std::cout << "kshort pdgid is " << m_truth_kshort_pdgid << "\n";
-
-								if(m_truth_kshort_pdgid == m_KS_PDG)
+								if (piplus_truth->parent(0) == piminus_truth->parent(0)) 
 								{
-									m_total_rec_ks_hits++;								}
-
-							}	
+									const xAOD::TruthParticle *potential_truth_ks = piplus_truth->parent(0);
+									m_truth_kshort_pdgid = potential_truth_ks->pdgId();
+									if(m_truth_kshort_pdgid == m_KS_PDG)
+									{
+										m_total_rec_ks_hits++;	
+									}
+	
+								}	
+							}
 						}
 					}
 
