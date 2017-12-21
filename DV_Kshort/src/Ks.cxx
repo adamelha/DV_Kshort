@@ -124,12 +124,17 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("kshort_pTCalc", &m_kshort_pTCalc, "kshort_pTCalc/D" );
 	m_kshort_tree->Branch("kshort_invMass",&m_kshort_invMass,"kshort_invMass/D");
 	m_kshort_tree->Branch("kshort_alpha",  &m_kshort_alpha,  "kshort_alpha/D"  );
-	// Brnaches for primary vertex
+	// Branches for the most energetic primary vertex
 	m_kshort_tree->Branch("primary_vertex_x", &m_primary_vertex_x, "primary_vertex_x/D" );
 	m_kshort_tree->Branch("primary_vertex_y", &m_primary_vertex_y, "primary_vertex_y/D" );
 	m_kshort_tree->Branch("primary_vertex_z", &m_primary_vertex_z, "primary_vertex_z/D" );
 	m_kshort_tree->Branch("primary_vertex_pt",&m_primary_vertex_pt,"primary_vertex_pt/D");
-	m_kshort_tree->Branch("most_energetic_primary_vertex_index",&m_most_energetic_primary_vertex_index , "most_energetic_primary_vertex_index/I"); 
+	m_kshort_tree->Branch("most_energetic_primary_vertex_index",&m_most_energetic_primary_vertex_index , "most_energetic_primary_vertex_index/I");
+	// Branches for the first primary vertex 
+	m_kshort_tree->Branch("primary_vertex_0x",       &m_primary_vertex_0x,       "primary_vertex_0x/D"       );
+	m_kshort_tree->Branch("primary_vertex_0y",       &m_primary_vertex_0y,       "primary_vertex_0y/D"       );
+	m_kshort_tree->Branch("primary_vertex_0z",       &m_primary_vertex_0z,       "primary_vertex_0z/D"       );
+	m_kshort_tree->Branch("zeroth_primary_vertex_pt",&m_zeroth_primary_vertex_pt,"zeroth_primary_vertex_pt/D");
 	// Branches for Truth checking
 	m_kshort_tree->Branch("truth_piplus_pdgid", &m_truth_piplus_pdgid, "truth_piplus_pdgid/I" );
 	m_kshort_tree->Branch("truth_piminus_pdgid",&m_truth_piminus_pdgid,"truth_piminus_pdgid/I");
@@ -144,6 +149,10 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("covariance20", &m_covariance20, "covariance20/D");
 	m_kshort_tree->Branch("covariance21", &m_covariance21, "covariance21/D");
 	m_kshort_tree->Branch("covariance22", &m_covariance22, "covariance22/D");
+	// The square root (sr) of the diagonal elements of the error matrix related to Ks vertices
+	m_kshort_tree->Branch("sr_covariance00", &m_sr_covariance00, "sr_covariance00/D");
+	m_kshort_tree->Branch("sr_covariance11", &m_sr_covariance11, "sr_covariance11/D");
+	m_kshort_tree->Branch("sr_covariance22", &m_sr_covariance22, "sr_covariance22/D");
 	// Related to both Ks and primary vertices 
 	m_kshort_tree->Branch("z_sv_pv",&m_z_sv_pv,"z_sv_pv/D");
 
@@ -278,21 +287,33 @@ StatusCode DDL::Ks::finding_right_ks()
 
 	// Pointer for the first primary vertex from the primary vertices container
 	const xAOD::Vertex* most_energetic_vertex = nullptr;
+	const xAOD::Vertex* zeroth_primary_vertex = nullptr;
 	
 	if(primary_vertices->size()>0)
 	{	
-		
+
+		// The most energetic primary vertex and its index
 		m_most_energetic_primary_vertex_index = get_most_energetic_vertex_index(primary_vertices);
 		most_energetic_vertex = (*primary_vertices)[m_most_energetic_primary_vertex_index];
 
+		// The first primary vertex, maybe the most energetic one or maybe not
+		zeroth_primary_vertex = (*primary_vertices)[0];
 		
-		// Position coordinates of the first primary vertex
-		m_primary_vertex_x = most_energetic_vertex ->x();
-		m_primary_vertex_y = most_energetic_vertex ->y();
-		m_primary_vertex_z = most_energetic_vertex ->z();
-		
+		// Position coordinates of the most energetic primary vertex
+		m_primary_vertex_x = most_energetic_vertex->x();
+		m_primary_vertex_y = most_energetic_vertex->y();
+		m_primary_vertex_z = most_energetic_vertex->z();
+		// Sum of transverse momenta of all the tracks associated with the most energetic primary vertex
 		m_primary_vertex_pt = get_sum_pt(most_energetic_vertex);
+
+		// Position coordinates of the first primary vertex
+		m_primary_vertex_0x = zeroth_primary_vertex->x();
+		m_primary_vertex_0y = zeroth_primary_vertex->y();
+		m_primary_vertex_0z = zeroth_primary_vertex->z();
+		// Sum of transverse momenta of all the tracks associated with the first primary vertex
+		m_zeroth_primary_vertex_pt = get_sum_pt(zeroth_primary_vertex);
 		
+		// Average no. of tracks associated with each primary vertex
 		for(const xAOD::Vertex* vertex_ptr : *primary_vertices)
 		{
 			avg_num_of_tracks += vertex_ptr->nTrackParticles();
@@ -370,7 +391,7 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_kshort_z = vertex_ptr->z();
 
 					// Related to both Ks and primary vertices
-					m_z_sv_pv = abs( m_kshort_z - ( (m_kshort_rDV * m_kshort_pz) / (m_kshort_pTCalc)) - m_primary_vertex_z );
+					m_z_sv_pv = ( m_kshort_z - ( (m_kshort_rDV * m_kshort_pz) / (m_kshort_pTCalc)) - m_primary_vertex_0z );
 
 
 
@@ -421,7 +442,9 @@ StatusCode DDL::Ks::finding_right_ks()
                     			m_covariance20 = covariance_matrix(2,0);
                     			m_covariance21 = covariance_matrix(2,1);
                     			m_covariance22 = covariance_matrix(2,2);
-
+					m_sr_covariance00 = sqrt(covariance_matrix(0,0));
+					m_sr_covariance11 = sqrt(covariance_matrix(1,1));
+					m_sr_covariance22 = sqrt(covariance_matrix(2,2));
 
 					this->m_kshort_tree->Fill();
 
