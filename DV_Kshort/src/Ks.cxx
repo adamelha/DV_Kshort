@@ -123,7 +123,10 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("kshort_z",      &m_kshort_z,      "kshort_z/D"      );
 	m_kshort_tree->Branch("kshort_pTCalc", &m_kshort_pTCalc, "kshort_pTCalc/D" );
 	m_kshort_tree->Branch("kshort_invMass",&m_kshort_invMass,"kshort_invMass/D");
+	m_kshort_tree->Branch("kshort_phi",   &m_kshort_phi,   "kshort_phi/D"  ); 
 	m_kshort_tree->Branch("kshort_alpha",  &m_kshort_alpha,  "kshort_alpha/D"  );
+	m_kshort_tree->Branch("kshort_modified_alpha", &m_kshort_modified_alpha,"kshort_modified_alpha/D");
+
 	// Branches for the most energetic primary vertex
 	m_kshort_tree->Branch("primary_vertex_x", &m_primary_vertex_x, "primary_vertex_x/D" );
 	m_kshort_tree->Branch("primary_vertex_y", &m_primary_vertex_y, "primary_vertex_y/D" );
@@ -139,6 +142,8 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("truth_piplus_pdgid", &m_truth_piplus_pdgid, "truth_piplus_pdgid/I" );
 	m_kshort_tree->Branch("truth_piminus_pdgid",&m_truth_piminus_pdgid,"truth_piminus_pdgid/I");
 	m_kshort_tree->Branch("truth_kshort_pdgid", &m_truth_kshort_pdgid, "truth_kshort_pdgid/I" );
+
+	/*
 	//Branches for error matrix related to Ks vertices
 	m_kshort_tree->Branch("covariance00", &m_covariance00, "covariance00/D");
 	m_kshort_tree->Branch("covariance01", &m_covariance01, "covariance01/D");
@@ -153,6 +158,8 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("sr_covariance00", &m_sr_covariance00, "sr_covariance00/D");
 	m_kshort_tree->Branch("sr_covariance11", &m_sr_covariance11, "sr_covariance11/D");
 	m_kshort_tree->Branch("sr_covariance22", &m_sr_covariance22, "sr_covariance22/D");
+	*/
+	
 	// Related to both Ks and primary vertices 
 	m_kshort_tree->Branch("z_sv_pv",&m_z_sv_pv,"z_sv_pv/D");
 
@@ -283,6 +290,9 @@ StatusCode DDL::Ks::finding_right_ks()
 
 	TLorentzVector p4_sum;
 	Double_t rdvDotPt;
+	Double_t rdv_Minus_rpvt_Dot_Pt;
+	Double_t rdv_Minus_rpvt_square;
+	Double_t rdv_Minus_rpvt;
 	Double_t avg_num_of_tracks = 0;
 
 	// Pointer for the first primary vertex from the primary vertices container
@@ -327,14 +337,14 @@ StatusCode DDL::Ks::finding_right_ks()
 	// Defining the iterator in a short and efficient way
 	for (xAOD::Vertex* vertex_ptr : *secondary_vertices )
 	{
-		std::cout << "vtx_ptr " << vertex_ptr << "\n";
+		//std::cout << "vtx_ptr " << vertex_ptr << "\n";
 		// Vertices with only two tracks 
 		if (vertex_ptr->nTrackParticles() == 2)
 		{
 			// K short pidType is 310, (or PDG::pidType::K_S0)
 			piplus_track = vertex_ptr->trackParticle(0);
 			piminus_track = vertex_ptr->trackParticle(1);
-			std::cout << "got 2 tracks\n";
+			//std::cout << "got 2 tracks\n";
 			if (piplus_track->charge() < piminus_track->charge()) //in case track#0 is pi- and track#1 is pi+
 			{
 				std::swap(piminus_track, piplus_track);
@@ -342,11 +352,10 @@ StatusCode DDL::Ks::finding_right_ks()
 			// Checking whether the masses are equal to the charged pion mass or not
 			if (isPi(piplus_track->m()) && isPi(piminus_track->m()))
 			{
-				std::cout << "is pi\n ";
+				//std::cout << "is pi\n ";
 				// Checking if the tracks have charges of -1 and +1
 				if (piplus_track->charge() + piminus_track->charge() == 0 && piplus_track->charge() == 1)
 				{
-					std::cout << "start storing \n";
 					// We decide that these pions have originated from Ks
 					m_total_rec_ks++;
 					
@@ -372,30 +381,37 @@ StatusCode DDL::Ks::finding_right_ks()
 					m_piminus_d0  = piminus_track->d0();
 					m_piminus_eta = piminus_track->eta();
 					// Info. related to both pi+ and pi tracks
-					p4_sum = piplus_track->p4() + piminus_track->p4();
+					p4_sum 	      = piplus_track->p4() + piminus_track->p4();
 					m_kshort_invMass = p4_sum.Mag();
 					// Ks info
 					m_kshort_mass = vertex_ptr->auxdataConst<float>("vtx_mass");
-					m_kshort_rDV  = sqrt(pow(vertex_ptr->x(),2) + pow(vertex_ptr->y(),2)); 
-					m_kshort_e  = sqrt(pow(m_kshort_mass ,2)+pow(m_kshort_p ,2)); 
-					m_kshort_px = vertex_ptr->auxdataConst<float>("vtx_px");
-					m_kshort_py = vertex_ptr->auxdataConst<float>("vtx_py");
-					m_kshort_pz = vertex_ptr->auxdataConst<float>("vtx_pz");
-					m_kshort_pt = vertex_ptr->auxdataConst<float>("pT");
+					m_kshort_x    = vertex_ptr->x();
+					m_kshort_y    = vertex_ptr->y();
+					m_kshort_z    = vertex_ptr->z();
+
+					m_kshort_rDV  = sqrt(pow(m_kshort_x,2) + pow(m_kshort_y,2)); 
+					m_kshort_e    = sqrt(pow(m_kshort_mass ,2)+pow(m_kshort_p ,2)); 
+					m_kshort_px   = vertex_ptr->auxdataConst<float>("vtx_px");
+					m_kshort_py   = vertex_ptr->auxdataConst<float>("vtx_py");
+					m_kshort_pz   = vertex_ptr->auxdataConst<float>("vtx_pz");
+					m_kshort_pt   = vertex_ptr->auxdataConst<float>("pT");
 					m_kshort_pTCalc = sqrt(pow(m_kshort_px ,2) + pow(m_kshort_py ,2));
-					m_kshort_p  = sqrt(pow(m_kshort_px,2) + pow(m_kshort_py,2) + pow(m_kshort_pz,2));
+					m_kshort_p    = sqrt(pow(m_kshort_px,2) + pow(m_kshort_py,2) + pow(m_kshort_pz,2));
 					m_kshort_theta=acos(m_kshort_pz/m_kshort_p);
 					m_kshort_eta=log(1.0/(tan(m_kshort_theta/2)));
-					rdvDotPt=vertex_ptr->x() * m_kshort_px + vertex_ptr->y() * m_kshort_py;
+					rdvDotPt=m_kshort_x * m_kshort_px + m_kshort_y * m_kshort_py;
+
+					rdv_Minus_rpvt_Dot_Pt=(m_kshort_x-m_primary_vertex_x) * m_kshort_px + (m_kshort_y-m_primary_vertex_y) * m_kshort_py;
+					rdv_Minus_rpvt_square = pow(m_kshort_x-m_primary_vertex_x,2) + pow(m_kshort_y-m_primary_vertex_y,2);					
+					rdv_Minus_rpvt = sqrt(rdv_Minus_rpvt_square );
+
 					m_kshort_alpha = acos(rdvDotPt/(m_kshort_rDV * m_kshort_pTCalc));
-					m_kshort_x = vertex_ptr->x();
-					m_kshort_y = vertex_ptr->y();
-					m_kshort_z = vertex_ptr->z();
+					m_kshort_modified_alpha = acos(rdv_Minus_rpvt_Dot_Pt/(rdv_Minus_rpvt * m_kshort_pTCalc));
+					m_kshort_phi= atan(m_kshort_y/m_kshort_x);
 
 					// Related to both Ks and primary vertices
 					m_z_sv_pv = ( m_kshort_z - ( (m_kshort_rDV * m_kshort_pz) / (m_kshort_pTCalc)) - m_primary_vertex_0z );
 					
-					std::cout << "finished up to truth \n";
 
 					//init the truth vars
 					m_truth_piplus_pdgid = -999;
@@ -433,22 +449,25 @@ StatusCode DDL::Ks::finding_right_ks()
 						}
 					}
 					
-									m_covariance01 = -999;
-									m_covariance02 = -999;
-									m_covariance10 = -999;
-									m_covariance11 = -999;
-									m_covariance12 = -999;
-									m_covariance20 = -999;
-									m_covariance21 = -999;
-									m_covariance22 = -999;
+
+					/*
+					m_covariance01 = -999;
+					m_covariance02 = -999;
+					m_covariance10 = -999;
+					m_covariance11 = -999;
+					m_covariance12 = -999;
+					m_covariance20 = -999;
+					m_covariance21 = -999;
+					m_covariance22 = -999;
 					// Elements of the 3x3 error matrix related to Ks vertices
 					std::cout << "start getting matrices \n";
 								try{
 									
                     			auto covariance_matrix = vertex_ptr->covariance();
 								std::cout << "size of vector is " << covariance_matrix.size() << "\n";
-								if(covariance_matrix.size() != 0) {
-								std::cout << ">covariancePosition success \n";
+								if(covariance_matrix.size() != 0) 
+								{
+									std::cout << ">covariancePosition success \n";
 									m_covariance00 = covariance_matrix[0];
 									std::cout << "mat00 success \n";
 									
@@ -467,13 +486,17 @@ StatusCode DDL::Ks::finding_right_ks()
 									m_covariance21 = covariance_matrix[7];
 									std::cout << "mat21 success \n";
 									m_covariance22 = covariance_matrix[8];
-					m_sr_covariance00 = sqrt(covariance_matrix[0]);
-					m_sr_covariance11 = sqrt(covariance_matrix[4]);
-					m_sr_covariance22 = sqrt(covariance_matrix[8]);
+									m_sr_covariance00 = sqrt(covariance_matrix[0]);
+									m_sr_covariance11 = sqrt(covariance_matrix[4]);
+									m_sr_covariance22 = sqrt(covariance_matrix[8]);
 								}
-							} catch (...) {
-    // ...
+							} catch (...) 
+							{
+    								// ...
 							}
+					*/
+
+				
 					this->m_kshort_tree->Fill();
 
 				}
