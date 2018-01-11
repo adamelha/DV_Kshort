@@ -94,7 +94,7 @@ namespace DDL
 			Double_t m_kshort_pTCalc  	 = 0; // Transverse momentum calculation using px and py of Ks (To be used, the correct one)
  			Double_t m_z_sv_pv		 = 0; // The distance between the first primary vertex and the extrapolation of the momentum of the secondary vertex along z-axis
 			Double_t m_kshort_phi		 = 0; // The angle between rdv and the x axis.
-
+			Double_t m_kshort_modified_rDV = 0; // r_DV of Ks (distance between primary and secondary vertices of Ks in xy-plane) 
 
 			/*
 			// Variables related to error matrix of Ks vertices (from Secondary vertices container)

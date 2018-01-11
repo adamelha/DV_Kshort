@@ -118,7 +118,7 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("kshort_px",     &m_kshort_px,     "kshort_px/D"     );
 	m_kshort_tree->Branch("kshort_py",     &m_kshort_py,     "kshort_py/D"     );
 	m_kshort_tree->Branch("kshort_pz",     &m_kshort_pz,     "kshort_pz/D"     );
-        m_kshort_tree->Branch("kshort_x",      &m_kshort_x,      "kshort_x/D"      );
+    m_kshort_tree->Branch("kshort_x",      &m_kshort_x,      "kshort_x/D"      );
 	m_kshort_tree->Branch("kshort_y",      &m_kshort_y,      "kshort_y/D"      );
 	m_kshort_tree->Branch("kshort_z",      &m_kshort_z,      "kshort_z/D"      );
 	m_kshort_tree->Branch("kshort_pTCalc", &m_kshort_pTCalc, "kshort_pTCalc/D" );
@@ -126,6 +126,7 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("kshort_phi",   &m_kshort_phi,   "kshort_phi/D"  ); 
 	m_kshort_tree->Branch("kshort_alpha",  &m_kshort_alpha,  "kshort_alpha/D"  );
 	m_kshort_tree->Branch("kshort_modified_alpha", &m_kshort_modified_alpha,"kshort_modified_alpha/D");
+	m_kshort_tree->Branch("kshort_modified_rDV", &m_kshort_modified_rDV, "m_kshort_modified_rDV/D" );
 
 	// Branches for the most energetic primary vertex
 	m_kshort_tree->Branch("primary_vertex_x", &m_primary_vertex_x, "primary_vertex_x/D" );
@@ -142,7 +143,8 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("truth_piplus_pdgid", &m_truth_piplus_pdgid, "truth_piplus_pdgid/I" );
 	m_kshort_tree->Branch("truth_piminus_pdgid",&m_truth_piminus_pdgid,"truth_piminus_pdgid/I");
 	m_kshort_tree->Branch("truth_kshort_pdgid", &m_truth_kshort_pdgid, "truth_kshort_pdgid/I" );
-
+	
+	
 	/*
 	//Branches for error matrix related to Ks vertices
 	m_kshort_tree->Branch("covariance00", &m_covariance00, "covariance00/D");
@@ -404,11 +406,12 @@ StatusCode DDL::Ks::finding_right_ks()
 					rdv_Minus_rpvt_Dot_Pt=(m_kshort_x-m_primary_vertex_x) * m_kshort_px + (m_kshort_y-m_primary_vertex_y) * m_kshort_py;
 					rdv_Minus_rpvt_square = pow(m_kshort_x-m_primary_vertex_x,2) + pow(m_kshort_y-m_primary_vertex_y,2);					
 					rdv_Minus_rpvt = sqrt(rdv_Minus_rpvt_square );
-
+					
+					
 					m_kshort_alpha = acos(rdvDotPt/(m_kshort_rDV * m_kshort_pTCalc));
 					m_kshort_modified_alpha = acos(rdv_Minus_rpvt_Dot_Pt/(rdv_Minus_rpvt * m_kshort_pTCalc));
 					m_kshort_phi= atan(m_kshort_y/m_kshort_x);
-
+					m_kshort_modified_rDV = rdv_Minus_rpvt;
 					// Related to both Ks and primary vertices
 					m_z_sv_pv = ( m_kshort_z - ( (m_kshort_rDV * m_kshort_pz) / (m_kshort_pTCalc)) - m_primary_vertex_0z );
 					
