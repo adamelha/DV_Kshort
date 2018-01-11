@@ -86,7 +86,10 @@ StatusCode DDL::Ks::initialize()
 
 	m_kshort_tree = new TTree("KsTTree", "Ks Tree");
 	CHECK(histSvc->regTree("/Ks/m_kshort_tree", m_kshort_tree));
-	// For detailed description of the branches, please refer to Ks.h (the header file)	
+	// For detailed description of the branches, please refer to Ks.h (the header file)
+
+	m_kshort_tree->Branch("event_number",  &m_event_number, "event_number/I");
+	
         // Branches for pi+
 	m_kshort_tree->Branch("piplus_pt",   &m_piplus_pt,   "piplus_pt/D"  );
 	m_kshort_tree->Branch("piplus_p",    &m_piplus_p,    "piplus_p/D"   );
@@ -118,7 +121,7 @@ StatusCode DDL::Ks::initialize()
 	m_kshort_tree->Branch("kshort_px",     &m_kshort_px,     "kshort_px/D"     );
 	m_kshort_tree->Branch("kshort_py",     &m_kshort_py,     "kshort_py/D"     );
 	m_kshort_tree->Branch("kshort_pz",     &m_kshort_pz,     "kshort_pz/D"     );
-    m_kshort_tree->Branch("kshort_x",      &m_kshort_x,      "kshort_x/D"      );
+    	m_kshort_tree->Branch("kshort_x",      &m_kshort_x,      "kshort_x/D"      );
 	m_kshort_tree->Branch("kshort_y",      &m_kshort_y,      "kshort_y/D"      );
 	m_kshort_tree->Branch("kshort_z",      &m_kshort_z,      "kshort_z/D"      );
 	m_kshort_tree->Branch("kshort_pTCalc", &m_kshort_pTCalc, "kshort_pTCalc/D" );
@@ -189,8 +192,8 @@ StatusCode DDL::Ks::finalize()
 
 StatusCode DDL::Ks::execute() 
 {
-	this->m_event_counter++;
-	std::cout << "Event Number : " << this->m_event_counter << std::endl;
+	this->m_event_number++;
+	std::cout << "Event Number : " << this->m_event_number << std::endl;
 
 	const xAOD::EventInfo* ei_ptr = 0;
   	//evtStore() returns the EventStore of the current event in the event loop. it represents the event.

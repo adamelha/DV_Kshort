@@ -38,7 +38,7 @@ namespace DDL
         		//std::string m_hist_name;
 
 			// Event number
-			int m_event_counter		 = 0;
+			Int_t m_event_number		 = 0;
 			// TTree
 			TTree* m_kshort_tree 		 = nullptr;
 			// Description??			
